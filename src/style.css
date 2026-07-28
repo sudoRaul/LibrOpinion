@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* Modo oscuro por clase (.dark en <html>), no por preferencia del sistema:
+   así el usuario puede forzarlo con el toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================================================
+   librOpinion — sistema tipográfico
+   Display: Fraunces (serif "old-style" con carácter).
+   Cuerpo/UI: Inter. Las citas usan Fraunces en itálica.
+   ========================================================= */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+}
+
+/* Titulares: Fraunces con eje óptico alto (formas más finas y elegantes) */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0;
+}
+
+/* Citas: Fraunces en itálica, con un toque "wonky" para dar vida literaria */
+.font-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 40, "SOFT" 40, "WONK" 1;
+}
+
+/* Quality floor: foco de teclado siempre visible */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-emerald-700);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* =========================================================
+   librOpinion — animaciones y utilidades de la landing
+   (CSS puro; sin dependencias. Modo claro por ahora.)
+   ========================================================= */
+
+@keyframes lo-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-16px); }
+}
+@keyframes lo-float-rot {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translateY(-12px) rotate(var(--rot, 0deg)); }
+}
+@keyframes lo-fade-up {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lo-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes lo-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(30px, -20px) scale(1.08); }
+  66%      { transform: translate(-20px, 20px) scale(0.96); }
+}
+
+/* Entrada escalonada (above the fold) */
+.lo-fade-up {
+  opacity: 0;
+  animation: lo-fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* Flotación de las tarjetas decorativas */
+.lo-float      { animation: lo-float 6s ease-in-out infinite; }
+.lo-float-rot  { animation: lo-float-rot 7s ease-in-out infinite; }
+
+/* Manchas de color de fondo */
+.lo-blob { animation: lo-blob 18s ease-in-out infinite; }
+
+/* Marquesina de frases */
+.lo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: lo-marquee 42s linear infinite;
+}
+.lo-marquee:hover .lo-marquee-track { animation-play-state: paused; }
+
+/* Reveal al hacer scroll (IntersectionObserver añade .is-visible) */
+.lo-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lo-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Respeta a quien prefiere menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .lo-fade-up,
+  .lo-float,
+  .lo-float-rot,
+  .lo-blob,
+  .lo-marquee-track { animation: none !important; }
+  .lo-fade-up { opacity: 1; }
+  .lo-reveal { opacity: 1; transform: none; transition: none; }
+}
