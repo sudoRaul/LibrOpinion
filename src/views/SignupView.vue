@@ -58,8 +58,9 @@ async function onGoogle() {
         </svg>
       </div>
       <p class="mt-4 text-stone-700 dark:text-stone-300">
-        Te hemos enviado un correo a <span class="font-medium text-stone-900 dark:text-white">{{ email }}</span>.
-        Confírmalo para activar tu cuenta y luego inicia sesión.
+        Casi listo. Si <span class="font-medium text-stone-900 dark:text-white">{{ email }}</span> es
+        una cuenta nueva, te hemos enviado un enlace para confirmarla. Si ya tenías cuenta,
+        revisa tu correo o inicia sesión.
       </p>
       <RouterLink
         to="/login"
