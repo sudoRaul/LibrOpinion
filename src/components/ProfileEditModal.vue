@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useStorage } from '../composables/useStorage'
 import type { Profile } from '../composables/useProfile'
 import AppTextField from './AppTextField.vue'
 
@@ -8,6 +9,7 @@ const props = defineProps<{ open: boolean; profile: Profile }>()
 const emit = defineEmits<{ close: []; updated: [username: string] }>()
 
 const auth = useAuthStore()
+const { uploadAvatar } = useStorage()
 
 const username = ref('')
 const displayName = ref('')
@@ -15,6 +17,24 @@ const bio = ref('')
 const avatarUrl = ref('')
 const error = ref<string | null>(null)
 const saving = ref(false)
+const uploading = ref(false)
+
+async function onAvatarFile(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = '' // permite re-subir el mismo archivo
+  if (!file) return
+
+  error.value = null
+  uploading.value = true
+  const { url, error: err } = await uploadAvatar(file)
+  uploading.value = false
+  if (err || !url) {
+    error.value = err ?? 'No se pudo subir la imagen.'
+    return
+  }
+  avatarUrl.value = url
+}
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
 
@@ -112,7 +132,19 @@ async function submit() {
                 <circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
             </div>
-            <p class="text-sm text-stone-500 dark:text-stone-400">Vista previa del avatar</p>
+            <div>
+              <label
+                class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                :class="uploading ? 'pointer-events-none opacity-60' : ''"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                {{ uploading ? 'Subiendo…' : 'Subir imagen' }}
+                <input type="file" accept="image/*" class="hidden" :disabled="uploading" @change="onAvatarFile" />
+              </label>
+              <p class="mt-1 text-xs text-stone-400">JPG, PNG… máx. 2 MB.</p>
+            </div>
           </div>
 
           <AppTextField

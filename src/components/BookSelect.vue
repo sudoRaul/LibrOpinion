@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBooks, type Book } from '../composables/useBooks'
+import { useStorage } from '../composables/useStorage'
 
 defineProps<{ modelValue: Book | null }>()
 const emit = defineEmits<{ 'update:modelValue': [book: Book | null] }>()
 
 const { searchBooks, createBook } = useBooks()
+const { uploadCover } = useStorage()
+const uploadingCover = ref(false)
 
 const mode = ref<'search' | 'create'>('search')
 const query = ref('')
@@ -50,6 +53,23 @@ function startCreate() {
   newCover.value = ''
   createError.value = null
   mode.value = 'create'
+}
+
+async function onCoverFile(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+
+  createError.value = null
+  uploadingCover.value = true
+  const { url, error } = await uploadCover(file)
+  uploadingCover.value = false
+  if (error || !url) {
+    createError.value = error ?? 'No se pudo subir la portada.'
+    return
+  }
+  newCover.value = url
 }
 
 async function confirmCreate() {
@@ -143,7 +163,28 @@ async function confirmCreate() {
       </p>
       <input v-model="newTitle" type="text" :class="inputClass" placeholder="Título" />
       <input v-model="newAuthor" type="text" :class="inputClass" placeholder="Autor" />
-      <input v-model="newCover" type="url" :class="inputClass" placeholder="URL de la portada (opcional)" />
+      <div class="flex items-center gap-3">
+        <img
+          v-if="newCover.trim()"
+          :src="newCover.trim()"
+          alt="Portada"
+          class="h-16 w-11 flex-none rounded object-cover shadow-sm"
+          referrerpolicy="no-referrer"
+        />
+        <div class="min-w-0 flex-1 space-y-2">
+          <input v-model="newCover" type="url" :class="inputClass" placeholder="URL de la portada (opcional)" />
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+            :class="uploadingCover ? 'pointer-events-none opacity-60' : ''"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+            </svg>
+            {{ uploadingCover ? 'Subiendo…' : 'Subir portada' }}
+            <input type="file" accept="image/*" class="hidden" :disabled="uploadingCover" @change="onCoverFile" />
+          </label>
+        </div>
+      </div>
       <div class="flex items-center gap-2">
         <button
           type="button"
