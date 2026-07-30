@@ -7,8 +7,10 @@ import { useComments } from './useComments'
 
 // Columnas del feed: la cita + libro + autor + recuentos de likes/comentarios.
 // Se declara como literal para que el cliente tipado infiera la forma anidada.
+// `author:profiles!quotes_user_id_fkey` desambigua el embed: al tener likes y
+// comments FKs a quotes y a profiles, PostgREST ve varias relaciones posibles.
 export const QUOTE_COLUMNS =
-  'id, content, page, note, created_at, user_id, book:books(id, title, author, cover_url), author:profiles(id, username, display_name, avatar_url), likes(count), comments(count)'
+  'id, content, page, note, created_at, user_id, book:books(id, title, author, cover_url), author:profiles!quotes_user_id_fkey(id, username, display_name, avatar_url), likes(count), comments(count)'
 
 const feedQueryProbe = supabase.from('quotes').select(QUOTE_COLUMNS)
 export type FeedQuote = QueryData<typeof feedQueryProbe>[number]
