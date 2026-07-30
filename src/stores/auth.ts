@@ -85,6 +85,11 @@ export const useAuthStore = defineStore('auth', {
     ): Promise<{ error: string | null; needsConfirmation: boolean }> {
       const { data, error } = await supabase.auth.signUp({ email, password })
       if (error) return { error: translateAuthError(error.message), needsConfirmation: false }
+      // Protección de enumeración: si el email ya existe, Supabase no da error pero
+      // devuelve un user con `identities` vacío (y no envía correo).
+      if (data.user && (data.user.identities?.length ?? 0) === 0) {
+        return { error: 'Ese email ya está registrado. Inicia sesión.', needsConfirmation: false }
+      }
       // Sin sesión tras el signUp ⇒ el proyecto exige confirmación por email.
       return { error: null, needsConfirmation: data.session === null }
     },
