@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
 import type { Database } from '../lib/database.types'
 
 export type ProfileHit = Pick<
@@ -7,17 +8,22 @@ export type ProfileHit = Pick<
 >
 
 export function useProfileSearch() {
-  /** Busca lectores por @usuario o nombre. */
+  /** Busca lectores por @usuario o nombre (excluye mi propio perfil). */
   async function searchProfiles(query: string): Promise<ProfileHit[]> {
     const q = query.trim()
     if (q.length < 2) return []
     const pattern = `%${q.replace(/[,()]/g, ' ')}%`
-    const { data, error } = await supabase
+
+    let builder = supabase
       .from('profiles')
       .select('id, username, display_name, avatar_url')
       .or(`username.ilike.${pattern},display_name.ilike.${pattern}`)
       .not('username', 'is', null)
-      .limit(8)
+
+    const auth = useAuthStore()
+    if (auth.user) builder = builder.neq('id', auth.user.id)
+
+    const { data, error } = await builder.limit(8)
     if (error) return []
     return data ?? []
   }
