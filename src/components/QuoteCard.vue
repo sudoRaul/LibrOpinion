@@ -1,22 +1,59 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { FeedQuote } from '../composables/useFeed'
+import { useLikes } from '../composables/useLikes'
+import { useComments, type Comment } from '../composables/useComments'
+import { useAuthStore } from '../stores/auth'
 import { timeAgo } from '../lib/format'
 
 const props = defineProps<{ quote: FeedQuote }>()
+
+const auth = useAuthStore()
+const likes = useLikes()
+const comments = useComments()
+
+const like = computed(() => likes.get(props.quote.id))
 
 const displayName = computed(
   () => props.quote.author?.display_name || props.quote.author?.username || 'Lector',
 )
 const handle = computed(() => props.quote.author?.username ?? null)
-const initials = computed(() =>
-  displayName.value
+const initials = (name: string) =>
+  name
     .split(' ')
     .map((w) => w[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase(),
-)
+    .toUpperCase()
+
+// --- Comentarios ---
+const showComments = ref(false)
+const newComment = ref('')
+const adding = ref(false)
+const commentError = ref<string | null>(null)
+
+async function toggleComments() {
+  showComments.value = !showComments.value
+  if (showComments.value && !comments.isLoaded(props.quote.id)) {
+    await comments.load(props.quote.id)
+  }
+}
+
+async function submitComment() {
+  const text = newComment.value.trim()
+  if (!text) return
+  commentError.value = null
+  adding.value = true
+  const { error } = await comments.add(props.quote.id, text)
+  adding.value = false
+  if (error) {
+    commentError.value = error
+    return
+  }
+  newComment.value = ''
+}
+
+const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'Lector'
 </script>
 
 <template>
@@ -40,7 +77,7 @@ const initials = computed(() =>
           v-else
           class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
         >
-          {{ initials }}
+          {{ initials(displayName) }}
         </div>
         <div class="min-w-0">
           <p class="truncate font-medium text-stone-900 group-hover/author:underline dark:text-white">
@@ -86,5 +123,126 @@ const initials = computed(() =>
         </p>
       </div>
     </footer>
+
+    <!-- Acciones -->
+    <div class="mt-3 flex items-center gap-1 border-t border-stone-100 pt-3 dark:border-stone-800">
+      <button
+        class="group inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
+        :class="like.liked ? 'text-rose-600 dark:text-rose-400' : 'text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400'"
+        :aria-pressed="like.liked"
+        @click="likes.toggle(quote.id)"
+      >
+        <svg
+          class="h-5 w-5 transition-transform"
+          :class="like.liked ? 'heart-pop' : 'group-hover:scale-110'"
+          viewBox="0 0 24 24"
+          :fill="like.liked ? 'currentColor' : 'none'"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+        <span :class="like.count ? '' : 'text-stone-400'">{{ like.count || 'Me gusta' }}</span>
+      </button>
+
+      <button
+        class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-emerald-700 dark:text-stone-400 dark:hover:text-emerald-400"
+        :class="showComments ? 'text-emerald-700 dark:text-emerald-400' : ''"
+        @click="toggleComments"
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8A8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z" />
+        </svg>
+        <span :class="comments.getCount(quote.id) ? '' : 'text-stone-400'">
+          {{ comments.getCount(quote.id) || 'Comentar' }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Panel de comentarios -->
+    <section v-if="showComments" class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
+      <!-- Composer -->
+      <form class="flex items-start gap-2" @submit.prevent="submitComment">
+        <div class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+          <img
+            v-if="auth.profile?.avatar_url"
+            :src="auth.profile.avatar_url"
+            alt="Tú"
+            class="h-8 w-8 rounded-full object-cover"
+            referrerpolicy="no-referrer"
+          />
+          <span v-else>{{ (auth.profile?.username ?? '?').charAt(0).toUpperCase() }}</span>
+        </div>
+        <div class="flex-1">
+          <input
+            v-model="newComment"
+            type="text"
+            maxlength="1000"
+            placeholder="Añade un comentario…"
+            class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+          />
+          <p v-if="commentError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ commentError }}</p>
+        </div>
+        <button
+          type="submit"
+          :disabled="adding || !newComment.trim()"
+          class="flex-none rounded-xl bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+        >
+          {{ adding ? '…' : 'Enviar' }}
+        </button>
+      </form>
+
+      <!-- Lista -->
+      <ul class="mt-4 space-y-4">
+        <li v-for="c in comments.getList(quote.id)" :key="c.id" class="flex gap-2.5">
+          <component
+            :is="c.author?.username ? 'RouterLink' : 'div'"
+            :to="c.author?.username ? `/u/${c.author.username}` : undefined"
+            class="flex-none"
+          >
+            <img
+              v-if="c.author?.avatar_url"
+              :src="c.author.avatar_url"
+              :alt="cName(c)"
+              class="h-8 w-8 rounded-full object-cover"
+              referrerpolicy="no-referrer"
+            />
+            <div
+              v-else
+              class="flex h-8 w-8 items-center justify-center rounded-full bg-stone-200 text-xs font-semibold text-stone-600 dark:bg-stone-700 dark:text-stone-300"
+            >
+              {{ initials(cName(c)) }}
+            </div>
+          </component>
+          <div class="min-w-0 flex-1">
+            <div class="rounded-2xl bg-stone-100 px-3 py-2 dark:bg-stone-800">
+              <p class="text-sm">
+                <RouterLink
+                  v-if="c.author?.username"
+                  :to="`/u/${c.author.username}`"
+                  class="font-medium text-stone-900 hover:underline dark:text-white"
+                >
+                  {{ cName(c) }}
+                </RouterLink>
+                <span v-else class="font-medium text-stone-900 dark:text-white">{{ cName(c) }}</span>
+              </p>
+              <p class="mt-0.5 whitespace-pre-wrap wrap-break-word text-sm text-stone-700 dark:text-stone-200">{{ c.content }}</p>
+            </div>
+            <div class="mt-1 flex items-center gap-3 px-3 text-xs text-stone-400">
+              <span>{{ timeAgo(c.created_at) }}</span>
+              <button
+                v-if="c.user_id === auth.user?.id"
+                class="hover:text-red-500"
+                @click="comments.remove(quote.id, c.id)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
   </article>
 </template>

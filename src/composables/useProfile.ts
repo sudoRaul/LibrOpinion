@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/auth'
 import type { Database } from '../lib/database.types'
 import { QUOTE_COLUMNS, type FeedQuote } from './useFeed'
+import { useLikes } from './useLikes'
+import { useComments } from './useComments'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -58,6 +60,9 @@ export function useProfile() {
     following.value = followingRes.count ?? 0
     quotes.value = quotesRes.data ?? []
     isFollowing.value = (followingMeRes.count ?? 0) > 0
+
+    useComments().hydrateCounts(quotes.value)
+    await useLikes().hydrate(quotes.value)
 
     loading.value = false
   }

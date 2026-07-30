@@ -2,11 +2,13 @@ import { ref } from 'vue'
 import type { QueryData } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/auth'
+import { useLikes } from './useLikes'
+import { useComments } from './useComments'
 
-// Columnas del feed: la cita + el libro citado + el autor (profile).
+// Columnas del feed: la cita + libro + autor + recuentos de likes/comentarios.
 // Se declara como literal para que el cliente tipado infiera la forma anidada.
 export const QUOTE_COLUMNS =
-  'id, content, page, note, created_at, user_id, book:books(id, title, author, cover_url), author:profiles(id, username, display_name, avatar_url)'
+  'id, content, page, note, created_at, user_id, book:books(id, title, author, cover_url), author:profiles(id, username, display_name, avatar_url), likes(count), comments(count)'
 
 const feedQueryProbe = supabase.from('quotes').select(QUOTE_COLUMNS)
 export type FeedQuote = QueryData<typeof feedQueryProbe>[number]
@@ -50,6 +52,8 @@ async function loadFeed() {
   } else {
     quotes.value = data ?? []
     loaded.value = true
+    useComments().hydrateCounts(quotes.value)
+    await useLikes().hydrate(quotes.value)
   }
   loading.value = false
 }
@@ -57,6 +61,8 @@ async function loadFeed() {
 /** Inserta una cita recién publicada al principio del feed (sin recargar). */
 function prependQuote(quote: FeedQuote) {
   quotes.value = [quote, ...quotes.value]
+  useComments().hydrateCounts([quote])
+  void useLikes().hydrate([quote])
 }
 
 export function useFeed() {
