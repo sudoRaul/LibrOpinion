@@ -6,6 +6,7 @@ import { useFeed } from '../composables/useFeed'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import QuoteComposerModal from '../components/QuoteComposerModal.vue'
+import ProfileSearch from '../components/ProfileSearch.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -68,6 +69,11 @@ async function logout() {
     </header>
 
     <main class="mx-auto max-w-2xl px-4 py-6">
+      <!-- Buscador de lectores -->
+      <div class="mb-4">
+        <ProfileSearch />
+      </div>
+
       <!-- Disparador del compositor -->
       <button
         class="mb-6 flex w-full items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 text-left text-stone-500 shadow-sm transition-colors hover:border-emerald-300 hover:text-stone-700 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800"
