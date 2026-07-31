@@ -1,0 +1,71 @@
+import type { RealtimeChannel } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
+import { useFeed } from './useFeed'
+import { useLikes } from './useLikes'
+import { useComments } from './useComments'
+
+let channel: RealtimeChannel | null = null
+
+/** Arranca la escucha en vivo de citas, likes y comentarios. Idempotente. */
+function start() {
+  const auth = useAuthStore()
+  if (!auth.user || channel) return
+
+  const myId = auth.user.id
+  const feed = useFeed()
+  const likes = useLikes()
+  const comments = useComments()
+
+  channel = supabase
+    .channel('libropinion-realtime')
+    // Citas nuevas: si es de alguien a quien sigo, la traigo al feed.
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'quotes' },
+      (payload) => {
+        const row = payload.new as { id: string; user_id: string }
+        if (row.user_id === myId) return // ya la añado yo al publicar (optimista)
+        if (feed.isFollowed(row.user_id)) void feed.addQuoteById(row.id)
+      },
+    )
+    // Likes de otros: ajusto el recuento.
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'likes' },
+      (payload) => {
+        const row = payload.new as { user_id: string; quote_id: string }
+        if (row.user_id !== myId) likes.bump(row.quote_id, +1)
+      },
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'likes' },
+      (payload) => {
+        const row = payload.old as { user_id?: string; quote_id?: string }
+        if (row.quote_id && row.user_id !== myId) likes.bump(row.quote_id, -1)
+      },
+    )
+    // Comentarios de otros: subo el contador (y recargo la lista si está abierta).
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'comments' },
+      (payload) => {
+        const row = payload.new as { user_id: string; quote_id: string }
+        if (row.user_id !== myId) comments.applyRemoteInsert(row.quote_id)
+      },
+    )
+    .subscribe()
+}
+
+/** Detiene la escucha (p. ej. al cerrar sesión). */
+function stop() {
+  if (channel) {
+    void supabase.removeChannel(channel)
+    channel = null
+  }
+}
+
+export function useRealtime() {
+  return { start, stop }
+}

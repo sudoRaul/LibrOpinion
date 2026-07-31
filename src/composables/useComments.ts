@@ -60,12 +60,20 @@ async function remove(quoteId: string, commentId: string) {
   counts.set(quoteId, Math.max(0, (counts.get(quoteId) ?? 1) - 1))
 }
 
+/** Realtime: un comentario de OTRO usuario. Sube el contador y, si el panel
+ *  ya está cargado, recarga la lista para traerlo con su autor. */
+function applyRemoteInsert(quoteId: string) {
+  counts.set(quoteId, (counts.get(quoteId) ?? 0) + 1)
+  if (loaded.has(quoteId)) void load(quoteId)
+}
+
 export function useComments() {
   return {
     hydrateCounts,
     load,
     add,
     remove,
+    applyRemoteInsert,
     getCount: (quoteId: string) => counts.get(quoteId) ?? 0,
     getList: (quoteId: string) => lists.get(quoteId) ?? [],
     isLoaded: (quoteId: string) => loaded.has(quoteId),

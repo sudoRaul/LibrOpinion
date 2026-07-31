@@ -20,6 +20,8 @@ const quotes = ref<FeedQuote[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const loaded = ref(false)
+// Autores cuyo contenido entra en mi feed (yo + a quién sigo). Lo usa Realtime.
+const followedAuthors = ref<Set<string>>(new Set())
 
 async function loadFeed() {
   const auth = useAuthStore()
@@ -41,6 +43,7 @@ async function loadFeed() {
   }
 
   const authorIds = [auth.user.id, ...follows.map((f) => f.following_id)]
+  followedAuthors.value = new Set(authorIds)
 
   const { data, error: quotesErr } = await supabase
     .from('quotes')
@@ -67,6 +70,18 @@ function prependQuote(quote: FeedQuote) {
   void useLikes().hydrate([quote])
 }
 
+/** ¿El autor entra en mi feed? (yo o alguien a quien sigo). */
+function isFollowed(userId: string): boolean {
+  return followedAuthors.value.has(userId)
+}
+
+/** Realtime: trae una cita entrante por id (con embeds) y la añade al feed. */
+async function addQuoteById(quoteId: string) {
+  if (quotes.value.some((q) => q.id === quoteId)) return // evita duplicados
+  const { data } = await supabase.from('quotes').select(QUOTE_COLUMNS).eq('id', quoteId).single()
+  if (data) prependQuote(data)
+}
+
 export function useFeed() {
-  return { quotes, loading, error, loaded, loadFeed, prependQuote }
+  return { quotes, loading, error, loaded, loadFeed, prependQuote, isFollowed, addQuoteById }
 }

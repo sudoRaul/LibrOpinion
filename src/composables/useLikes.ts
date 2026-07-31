@@ -73,6 +73,12 @@ function get(quoteId: string): LikeInfo {
   return state.get(quoteId) ?? { count: 0, liked: false }
 }
 
+/** Realtime: ajusta el recuento por un like de OTRO usuario (no toca `liked`). */
+function bump(quoteId: string, delta: number) {
+  const info = state.get(quoteId)
+  if (info) info.count = Math.max(0, info.count + delta)
+}
+
 export function useLikes() {
-  return { hydrate, toggle, get }
+  return { hydrate, toggle, get, bump }
 }
