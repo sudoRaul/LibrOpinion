@@ -23,6 +23,12 @@ const loaded = ref(false)
 // Autores cuyo contenido entra en mi feed (yo + a quién sigo). Lo usa Realtime.
 const followedAuthors = ref<Set<string>>(new Set())
 
+// "Descubre la comunidad": citas recientes de gente a la que NO sigo (ni yo mismo).
+// Sirve de fallback cuando el feed está vacío y de sugerencia cuando tiene contenido.
+const communityQuotes = ref<FeedQuote[]>([])
+const communityLoading = ref(false)
+const communityLoaded = ref(false)
+
 async function loadFeed() {
   const auth = useAuthStore()
   if (!auth.user) return
@@ -63,6 +69,36 @@ async function loadFeed() {
   loading.value = false
 }
 
+/**
+ * Carga citas recientes de la comunidad para "Descubrir": excluye mis propias
+ * citas y las de quien ya sigo (para que sea descubrimiento real, no duplicar el
+ * feed). Se apoya en `followedAuthors`, que rellena `loadFeed`; por eso conviene
+ * llamarla después de `loadFeed`.
+ */
+async function loadCommunity() {
+  const auth = useAuthStore()
+  if (!auth.user) return
+
+  communityLoading.value = true
+
+  // Excluir siempre a uno mismo, más a todos los autores que ya entran en mi feed.
+  const exclude = new Set<string>([auth.user.id, ...followedAuthors.value])
+  const excludeList = `(${[...exclude].join(',')})`
+
+  const { data } = await supabase
+    .from('quotes')
+    .select(QUOTE_COLUMNS)
+    .not('user_id', 'in', excludeList)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  communityQuotes.value = data ?? []
+  communityLoaded.value = true
+  useComments().hydrateCounts(communityQuotes.value)
+  await useLikes().hydrate(communityQuotes.value)
+  communityLoading.value = false
+}
+
 /** Inserta una cita recién publicada al principio del feed (sin recargar). */
 function prependQuote(quote: FeedQuote) {
   quotes.value = [quote, ...quotes.value]
@@ -100,7 +136,11 @@ export function useFeed() {
     loading,
     error,
     loaded,
+    communityQuotes,
+    communityLoading,
+    communityLoaded,
     loadFeed,
+    loadCommunity,
     prependQuote,
     isFollowed,
     addQuoteById,

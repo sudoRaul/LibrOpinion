@@ -12,20 +12,32 @@ import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
 const router = useRouter()
-const { quotes, loading, error, loaded, loadFeed } = useFeed()
+const {
+  quotes,
+  loading,
+  error,
+  loaded,
+  communityQuotes,
+  communityLoading,
+  communityLoaded,
+  loadFeed,
+  loadCommunity,
+} = useFeed()
 
 const composerOpen = ref(false)
 const editingQuote = ref<FeedQuote | null>(null)
 
 function onQuoteDeleted(id: string) {
   quotes.value = quotes.value.filter((q) => q.id !== id)
+  communityQuotes.value = communityQuotes.value.filter((q) => q.id !== id)
 }
 function onQuoteUpdated(updated: FeedQuote) {
   quotes.value = quotes.value.map((q) => (q.id === updated.id ? updated : q))
 }
 
-onMounted(() => {
-  if (!loaded.value) loadFeed()
+onMounted(async () => {
+  if (!loaded.value) await loadFeed()
+  loadCommunity()
 })
 
 async function logout() {
@@ -110,35 +122,66 @@ async function logout() {
         {{ error }}
       </p>
 
-      <!-- Vacío -->
-      <div
-        v-else-if="!quotes.length"
-        class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
-      >
-        <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">
-          Tu feed está en blanco
-        </p>
-        <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
-          Publica tu primera cita o sigue a otros lectores para llenar esta página.
-        </p>
-        <button
-          class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-          @click="composerOpen = true"
-        >
-          Publicar una cita
-        </button>
-      </div>
+      <!-- Contenido -->
+      <template v-else>
+        <!-- Tu feed (citas tuyas + de quien sigues) -->
+        <div v-if="quotes.length" class="space-y-4">
+          <QuoteCard
+            v-for="quote in quotes"
+            :key="quote.id"
+            :quote="quote"
+            @edit="editingQuote = $event"
+            @deleted="onQuoteDeleted"
+          />
+        </div>
 
-      <!-- Lista -->
-      <div v-else class="space-y-4">
-        <QuoteCard
-          v-for="quote in quotes"
-          :key="quote.id"
-          :quote="quote"
-          @edit="editingQuote = $event"
-          @deleted="onQuoteDeleted"
-        />
-      </div>
+        <!-- Descubre la comunidad -->
+        <section v-if="communityQuotes.length" :class="quotes.length ? 'mt-10' : ''">
+          <div class="mb-4">
+            <h2 class="font-display text-lg font-semibold text-stone-900 dark:text-white">
+              {{ quotes.length ? 'Descubre la comunidad' : 'Aún no sigues a nadie' }}
+            </h2>
+            <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+              {{
+                quotes.length
+                  ? 'Citas recientes de otros lectores que quizá quieras seguir.'
+                  : 'Mientras tanto, echa un vistazo a lo que comparte la comunidad.'
+              }}
+            </p>
+          </div>
+          <div class="space-y-4">
+            <QuoteCard
+              v-for="quote in communityQuotes"
+              :key="quote.id"
+              :quote="quote"
+            />
+          </div>
+        </section>
+
+        <!-- Feed vacío y comunidad aún cargando: esqueleto (evita parpadeo) -->
+        <div v-else-if="!quotes.length && communityLoading" class="space-y-4">
+          <div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+        </div>
+
+        <!-- Nada por ningún lado (ni feed ni comunidad) -->
+        <div
+          v-else-if="!quotes.length && communityLoaded"
+          class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
+        >
+          <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">
+            Tu feed está en blanco
+          </p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
+            Publica tu primera cita o sigue a otros lectores para llenar esta página.
+          </p>
+          <button
+            class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            @click="composerOpen = true"
+          >
+            Publicar una cita
+          </button>
+        </div>
+      </template>
     </main>
 
     <QuoteComposerModal :open="composerOpen" @close="composerOpen = false" />
