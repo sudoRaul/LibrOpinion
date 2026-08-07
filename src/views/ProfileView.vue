@@ -5,6 +5,8 @@ import { useProfile } from '../composables/useProfile'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
+import QuoteEditModal from '../components/QuoteEditModal.vue'
+import type { FeedQuote } from '../composables/useFeed'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,6 +38,14 @@ const initials = computed(() =>
 )
 
 const editing = ref(false)
+const editingQuote = ref<FeedQuote | null>(null)
+
+function onQuoteDeleted(id: string) {
+  quotes.value = quotes.value.filter((q) => q.id !== id)
+}
+function onQuoteUpdated(updated: FeedQuote) {
+  quotes.value = quotes.value.map((q) => (q.id === updated.id ? updated : q))
+}
 
 // Recarga al entrar y al navegar entre perfiles distintos.
 watch(
@@ -173,7 +183,13 @@ function onProfileUpdated(newUsername: string) {
           {{ isSelf ? 'Aún no has publicado ninguna cita.' : 'Todavía no ha publicado citas.' }}
         </div>
         <div v-else class="space-y-4">
-          <QuoteCard v-for="quote in quotes" :key="quote.id" :quote="quote" />
+          <QuoteCard
+            v-for="quote in quotes"
+            :key="quote.id"
+            :quote="quote"
+            @edit="editingQuote = $event"
+            @deleted="onQuoteDeleted"
+          />
         </div>
 
         <ProfileEditModal
@@ -181,6 +197,12 @@ function onProfileUpdated(newUsername: string) {
           :profile="profile"
           @close="editing = false"
           @updated="onProfileUpdated"
+        />
+        <QuoteEditModal
+          :open="editingQuote !== null"
+          :quote="editingQuote"
+          @close="editingQuote = null"
+          @updated="onQuoteUpdated"
         />
       </template>
     </main>

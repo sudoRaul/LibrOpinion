@@ -1,16 +1,48 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import type { FeedQuote } from '../composables/useFeed'
 import { useLikes } from '../composables/useLikes'
 import { useComments, type Comment } from '../composables/useComments'
+import { useQuotes } from '../composables/useQuotes'
 import { useAuthStore } from '../stores/auth'
 import { timeAgo } from '../lib/format'
 
 const props = defineProps<{ quote: FeedQuote }>()
+const emit = defineEmits<{ edit: [quote: FeedQuote]; deleted: [id: string] }>()
 
 const auth = useAuthStore()
 const likes = useLikes()
 const comments = useComments()
+const { deleteQuote } = useQuotes()
+
+// Solo el dueño ve el menú de editar/borrar (la garantía real es RLS).
+const isOwn = computed(() => props.quote.user_id === auth.user?.id)
+
+const menuOpen = ref(false)
+const confirmingDelete = ref(false)
+const deleting = ref(false)
+const menuRoot = ref<HTMLElement | null>(null)
+
+function closeMenu() {
+  menuOpen.value = false
+  confirmingDelete.value = false
+}
+function onEdit() {
+  emit('edit', props.quote)
+  closeMenu()
+}
+async function onDelete() {
+  deleting.value = true
+  const { error } = await deleteQuote(props.quote.id)
+  deleting.value = false
+  if (!error) emit('deleted', props.quote.id)
+  closeMenu()
+}
+function onDocClick(e: MouseEvent) {
+  if (menuRoot.value && !menuRoot.value.contains(e.target as Node)) closeMenu()
+}
+onMounted(() => document.addEventListener('click', onDocClick))
+onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
 const like = computed(() => likes.get(props.quote.id))
 
@@ -58,8 +90,8 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
 
 <template>
   <article class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
-    <!-- Cabecera: autor -->
-    <header class="flex items-center gap-3">
+    <!-- Cabecera: autor + menú -->
+    <header class="flex items-start justify-between gap-3">
       <component
         :is="handle ? 'RouterLink' : 'div'"
         :to="handle ? `/u/${handle}` : undefined"
@@ -88,6 +120,63 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
           </p>
         </div>
       </component>
+
+      <!-- Menú de la cita (solo si es mía) -->
+      <div v-if="isOwn" ref="menuRoot" class="relative flex-none">
+        <button
+          class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+          aria-label="Opciones de la cita"
+          @click="menuOpen = !menuOpen"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" />
+          </svg>
+        </button>
+
+        <div
+          v-if="menuOpen"
+          class="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-800"
+        >
+          <template v-if="!confirmingDelete">
+            <button
+              class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-700"
+              @click="onEdit"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+              </svg>
+              Editar
+            </button>
+            <button
+              class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+              @click="confirmingDelete = true"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+              </svg>
+              Eliminar
+            </button>
+          </template>
+          <div v-else class="p-3">
+            <p class="text-sm text-stone-700 dark:text-stone-200">¿Eliminar esta cita?</p>
+            <div class="mt-3 flex justify-end gap-2">
+              <button
+                class="rounded-lg px-3 py-1.5 text-sm text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+                @click="confirmingDelete = false"
+              >
+                Cancelar
+              </button>
+              <button
+                :disabled="deleting"
+                class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+                @click="onDelete"
+              >
+                {{ deleting ? 'Eliminando…' : 'Eliminar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- Cita -->

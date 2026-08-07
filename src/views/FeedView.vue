@@ -6,13 +6,23 @@ import { useFeed } from '../composables/useFeed'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import QuoteComposerModal from '../components/QuoteComposerModal.vue'
+import QuoteEditModal from '../components/QuoteEditModal.vue'
 import ProfileSearch from '../components/ProfileSearch.vue'
+import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
 const router = useRouter()
 const { quotes, loading, error, loaded, loadFeed } = useFeed()
 
 const composerOpen = ref(false)
+const editingQuote = ref<FeedQuote | null>(null)
+
+function onQuoteDeleted(id: string) {
+  quotes.value = quotes.value.filter((q) => q.id !== id)
+}
+function onQuoteUpdated(updated: FeedQuote) {
+  quotes.value = quotes.value.map((q) => (q.id === updated.id ? updated : q))
+}
 
 onMounted(() => {
   if (!loaded.value) loadFeed()
@@ -121,10 +131,22 @@ async function logout() {
 
       <!-- Lista -->
       <div v-else class="space-y-4">
-        <QuoteCard v-for="quote in quotes" :key="quote.id" :quote="quote" />
+        <QuoteCard
+          v-for="quote in quotes"
+          :key="quote.id"
+          :quote="quote"
+          @edit="editingQuote = $event"
+          @deleted="onQuoteDeleted"
+        />
       </div>
     </main>
 
     <QuoteComposerModal :open="composerOpen" @close="composerOpen = false" />
+    <QuoteEditModal
+      :open="editingQuote !== null"
+      :quote="editingQuote"
+      @close="editingQuote = null"
+      @updated="onQuoteUpdated"
+    />
   </div>
 </template>
