@@ -129,8 +129,9 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
         </div>
       </component>
 
-      <!-- Menú de la cita (solo si es mía) -->
-      <div v-if="isOwn" ref="menuRoot" class="relative flex-none">
+      <!-- Menú de la cita (solo si es mía). @click.stop evita que los clics
+           internos lleguen a document y cierren el menú por el "clic fuera". -->
+      <div v-if="isOwn" ref="menuRoot" class="relative flex-none" @click.stop>
         <button
           class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
           aria-label="Opciones de la cita"
