@@ -82,6 +82,29 @@ async function addQuoteById(quoteId: string) {
   if (data) prependQuote(data)
 }
 
+/** Realtime: refresca una cita ya visible (tras editarla otro usuario). */
+async function refreshQuoteById(quoteId: string) {
+  if (!quotes.value.some((q) => q.id === quoteId)) return
+  const { data } = await supabase.from('quotes').select(QUOTE_COLUMNS).eq('id', quoteId).single()
+  if (data) quotes.value = quotes.value.map((q) => (q.id === quoteId ? data : q))
+}
+
+/** Realtime: quita del feed una cita borrada. */
+function removeQuoteById(quoteId: string) {
+  quotes.value = quotes.value.filter((q) => q.id !== quoteId)
+}
+
 export function useFeed() {
-  return { quotes, loading, error, loaded, loadFeed, prependQuote, isFollowed, addQuoteById }
+  return {
+    quotes,
+    loading,
+    error,
+    loaded,
+    loadFeed,
+    prependQuote,
+    isFollowed,
+    addQuoteById,
+    refreshQuoteById,
+    removeQuoteById,
+  }
 }

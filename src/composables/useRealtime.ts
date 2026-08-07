@@ -55,6 +55,24 @@ function start() {
         if (row.user_id !== myId) comments.applyRemoteInsert(row.quote_id)
       },
     )
+    // Cita editada por otro: refresco la que ya tengo en el feed.
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'quotes' },
+      (payload) => {
+        const row = payload.new as { id: string; user_id: string }
+        if (row.user_id !== myId) void feed.refreshQuoteById(row.id)
+      },
+    )
+    // Cita borrada: la quito del feed (mis borrados ya se reflejan localmente).
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'quotes' },
+      (payload) => {
+        const row = payload.old as { id?: string }
+        if (row.id) feed.removeQuoteById(row.id)
+      },
+    )
     .subscribe()
 }
 

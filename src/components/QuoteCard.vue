@@ -21,21 +21,29 @@ const isOwn = computed(() => props.quote.user_id === auth.user?.id)
 const menuOpen = ref(false)
 const confirmingDelete = ref(false)
 const deleting = ref(false)
+const deleteError = ref<string | null>(null)
 const menuRoot = ref<HTMLElement | null>(null)
 
 function closeMenu() {
   menuOpen.value = false
   confirmingDelete.value = false
+  deleteError.value = null
 }
 function onEdit() {
   emit('edit', props.quote)
   closeMenu()
 }
 async function onDelete() {
+  deleteError.value = null
   deleting.value = true
   const { error } = await deleteQuote(props.quote.id)
   deleting.value = false
-  if (!error) emit('deleted', props.quote.id)
+  if (error) {
+    // Dejamos el menú abierto para que el error sea visible.
+    deleteError.value = error
+    return
+  }
+  emit('deleted', props.quote.id)
   closeMenu()
 }
 function onDocClick(e: MouseEvent) {
@@ -159,6 +167,7 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
           </template>
           <div v-else class="p-3">
             <p class="text-sm text-stone-700 dark:text-stone-200">¿Eliminar esta cita?</p>
+            <p v-if="deleteError" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ deleteError }}</p>
             <div class="mt-3 flex justify-end gap-2">
               <button
                 class="rounded-lg px-3 py-1.5 text-sm text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
