@@ -67,6 +67,18 @@ export function useProfile() {
     loading.value = false
   }
 
+  /** Recuenta seguidores/seguidos del perfil (tras cambios hechos desde las listas). */
+  async function refreshCounts() {
+    if (!profile.value) return
+    const id = profile.value.id
+    const [followersRes, followingRes] = await Promise.all([
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id),
+    ])
+    followers.value = followersRes.count ?? 0
+    following.value = followingRes.count ?? 0
+  }
+
   async function toggleFollow() {
     const auth = useAuthStore()
     if (!auth.user || !profile.value || isSelf.value || followBusy.value) return
@@ -114,5 +126,6 @@ export function useProfile() {
     followBusy,
     load,
     toggleFollow,
+    refreshCounts,
   }
 }

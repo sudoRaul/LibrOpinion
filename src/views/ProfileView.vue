@@ -6,7 +6,9 @@ import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
+import FollowListModal from '../components/FollowListModal.vue'
 import type { FeedQuote } from '../composables/useFeed'
+import type { FollowListMode } from '../composables/useFollowList'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +25,7 @@ const {
   followBusy,
   load,
   toggleFollow,
+  refreshCounts,
 } = useProfile()
 
 const displayName = computed(
@@ -39,6 +42,15 @@ const initials = computed(() =>
 
 const editing = ref(false)
 const editingQuote = ref<FeedQuote | null>(null)
+
+// Modal de listas de seguidores / seguidos.
+const followListOpen = ref(false)
+const followListMode = ref<FollowListMode>('followers')
+function openFollowList(mode: FollowListMode) {
+  if (!profile.value) return
+  followListMode.value = mode
+  followListOpen.value = true
+}
 
 function onQuoteDeleted(id: string) {
   quotes.value = quotes.value.filter((q) => q.id !== id)
@@ -165,12 +177,18 @@ function onProfileUpdated(newUsername: string) {
           <p v-if="profile.bio" class="mt-4 text-stone-600 dark:text-stone-300">{{ profile.bio }}</p>
 
           <div class="mt-4 flex gap-6 text-sm">
-            <span class="text-stone-600 dark:text-stone-400">
+            <button
+              class="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+              @click="openFollowList('followers')"
+            >
               <span class="font-semibold text-stone-900 dark:text-white">{{ followers }}</span> seguidores
-            </span>
-            <span class="text-stone-600 dark:text-stone-400">
+            </button>
+            <button
+              class="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+              @click="openFollowList('following')"
+            >
               <span class="font-semibold text-stone-900 dark:text-white">{{ following }}</span> siguiendo
-            </span>
+            </button>
           </div>
         </section>
 
@@ -203,6 +221,13 @@ function onProfileUpdated(newUsername: string) {
           :quote="editingQuote"
           @close="editingQuote = null"
           @updated="onQuoteUpdated"
+        />
+        <FollowListModal
+          :open="followListOpen"
+          :user-id="profile.id"
+          :mode="followListMode"
+          @close="followListOpen = false"
+          @changed="refreshCounts"
         />
       </template>
     </main>
