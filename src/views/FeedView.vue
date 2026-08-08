@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useFeed } from '../composables/useFeed'
+import { useSuggestions } from '../composables/useSuggestions'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import QuoteComposerModal from '../components/QuoteComposerModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
 import ProfileSearch from '../components/ProfileSearch.vue'
+import WhoToFollow from '../components/WhoToFollow.vue'
 import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
@@ -24,8 +26,13 @@ const {
   loadCommunity,
 } = useFeed()
 
+const { load: loadSuggestions } = useSuggestions()
+
 const composerOpen = ref(false)
 const editingQuote = ref<FeedQuote | null>(null)
+
+// Tras qué cita insertar el bloque "A quién seguir" (3.ª, o la última si hay menos).
+const suggestionSlot = computed(() => Math.min(2, quotes.value.length - 1))
 
 function onQuoteDeleted(id: string) {
   quotes.value = quotes.value.filter((q) => q.id !== id)
@@ -38,6 +45,7 @@ function onQuoteUpdated(updated: FeedQuote) {
 onMounted(async () => {
   if (!loaded.value) await loadFeed()
   loadCommunity()
+  loadSuggestions()
 })
 
 async function logout() {
@@ -126,14 +134,18 @@ async function logout() {
       <template v-else>
         <!-- Tu feed (citas tuyas + de quien sigues) -->
         <div v-if="quotes.length" class="space-y-4">
-          <QuoteCard
-            v-for="quote in quotes"
-            :key="quote.id"
-            :quote="quote"
-            @edit="editingQuote = $event"
-            @deleted="onQuoteDeleted"
-          />
+          <template v-for="(quote, i) in quotes" :key="quote.id">
+            <QuoteCard
+              :quote="quote"
+              @edit="editingQuote = $event"
+              @deleted="onQuoteDeleted"
+            />
+            <WhoToFollow v-if="i === suggestionSlot" />
+          </template>
         </div>
+
+        <!-- Feed vacío: las sugerencias suben arriba, donde más ayudan -->
+        <WhoToFollow v-if="!quotes.length" class="mb-6" />
 
         <!-- Descubre la comunidad -->
         <section v-if="communityQuotes.length" :class="quotes.length ? 'mt-10' : ''">

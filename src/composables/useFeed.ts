@@ -130,6 +130,35 @@ function removeQuoteById(quoteId: string) {
   quotes.value = quotes.value.filter((q) => q.id !== quoteId)
 }
 
+/**
+ * Acabo de seguir a alguien (p. ej. desde "A quién seguir"): sus citas dejan de
+ * ser "comunidad", pasan a entrar en mi feed vía Realtime, y traigo aquí y ahora
+ * sus citas recientes para que el feed refleje el follow al instante.
+ */
+async function onFollowedAuthor(userId: string) {
+  followedAuthors.value = new Set([...followedAuthors.value, userId])
+  communityQuotes.value = communityQuotes.value.filter((q) => q.user_id !== userId)
+
+  const { data } = await supabase
+    .from('quotes')
+    .select(QUOTE_COLUMNS)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (!data?.length) return
+
+  const existing = new Set(quotes.value.map((q) => q.id))
+  const fresh = data.filter((q) => !existing.has(q.id))
+  if (!fresh.length) return
+
+  quotes.value = [...quotes.value, ...fresh].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  )
+  useComments().hydrateCounts(fresh)
+  await useLikes().hydrate(fresh)
+}
+
 export function useFeed() {
   return {
     quotes,
@@ -146,5 +175,6 @@ export function useFeed() {
     addQuoteById,
     refreshQuoteById,
     removeQuoteById,
+    onFollowedAuthor,
   }
 }
