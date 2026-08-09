@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/auth'
 import { useFeed } from './useFeed'
 import { useLikes } from './useLikes'
 import { useComments } from './useComments'
+import { useNotifications } from './useNotifications'
 
 let channel: RealtimeChannel | null = null
 
@@ -16,6 +17,7 @@ function start() {
   const feed = useFeed()
   const likes = useLikes()
   const comments = useComments()
+  const notifications = useNotifications()
 
   channel = supabase
     .channel('libropinion-realtime')
@@ -71,6 +73,20 @@ function start() {
       (payload) => {
         const row = payload.old as { id?: string }
         if (row.id) feed.removeQuoteById(row.id)
+      },
+    )
+    // Notificación nueva para mí: la traigo con sus datos y subo el contador.
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${myId}`,
+      },
+      (payload) => {
+        const row = payload.new as { id: string }
+        void notifications.applyIncoming(row.id)
       },
     )
     .subscribe()

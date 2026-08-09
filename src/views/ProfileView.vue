@@ -7,6 +7,7 @@ import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
 import FollowListModal from '../components/FollowListModal.vue'
+import NotificationsBell from '../components/NotificationsBell.vue'
 import type { FeedQuote } from '../composables/useFeed'
 import type { FollowListMode } from '../composables/useFollowList'
 
@@ -92,7 +93,10 @@ function onProfileUpdated(newUsername: string) {
           </svg>
           Feed
         </RouterLink>
-        <ThemeToggle />
+        <div class="flex items-center gap-2">
+          <NotificationsBell />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
 

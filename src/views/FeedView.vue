@@ -10,6 +10,7 @@ import QuoteComposerModal from '../components/QuoteComposerModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
 import ProfileSearch from '../components/ProfileSearch.vue'
 import WhoToFollow from '../components/WhoToFollow.vue'
+import NotificationsBell from '../components/NotificationsBell.vue'
 import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
@@ -87,6 +88,7 @@ async function logout() {
               {{ auth.profile.username.charAt(0).toUpperCase() }}
             </span>
           </RouterLink>
+          <NotificationsBell />
           <ThemeToggle />
           <button
             class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"

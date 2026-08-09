@@ -2,14 +2,24 @@
 import { watch, onBeforeUnmount } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { useRealtime } from './composables/useRealtime'
+import { useNotifications } from './composables/useNotifications'
 
 const auth = useAuthStore()
 const realtime = useRealtime()
+const notifications = useNotifications()
 
-// Escucha en vivo mientras haya sesión.
+// Escucha en vivo y notificaciones mientras haya sesión.
 watch(
   () => auth.isAuthenticated,
-  (yes) => (yes ? realtime.start() : realtime.stop()),
+  (yes) => {
+    if (yes) {
+      realtime.start()
+      notifications.load()
+    } else {
+      realtime.stop()
+      notifications.reset()
+    }
+  },
   { immediate: true },
 )
 onBeforeUnmount(() => realtime.stop())
