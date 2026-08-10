@@ -89,6 +89,20 @@ function start() {
         void notifications.applyIncoming(row.id)
       },
     )
+    // Notificación mía borrada (unfollow/unlike): la quito de la campana en vivo.
+    .on(
+      'postgres_changes',
+      {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${myId}`,
+      },
+      (payload) => {
+        const row = payload.old as { id?: string; read?: boolean }
+        if (row.id) notifications.applyRemoteDelete(row.id, row.read === false)
+      },
+    )
     .subscribe()
 }
 

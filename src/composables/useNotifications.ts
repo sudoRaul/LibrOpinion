@@ -101,6 +101,15 @@ async function applyIncoming(id: string) {
   if (!data.read) unread.value += 1
 }
 
+/** Realtime: una notificación mía se borró (unfollow/unlike). La quito y ajusto el contador. */
+function applyRemoteDelete(id: string, wasUnread: boolean) {
+  const existing = items.value.find((n) => n.id === id)
+  items.value = items.value.filter((n) => n.id !== id)
+  // Si la tengo cargada, uso su estado real; si no, me fío del dato del evento.
+  const unreadRemoved = existing ? !existing.read : wasUnread
+  if (unreadRemoved) unread.value = Math.max(0, unread.value - 1)
+}
+
 /** Al cerrar sesión. */
 function reset() {
   items.value = []
@@ -109,5 +118,16 @@ function reset() {
 }
 
 export function useNotifications() {
-  return { items, unread, loading, loaded, load, markAllRead, markRead, applyIncoming, reset }
+  return {
+    items,
+    unread,
+    loading,
+    loaded,
+    load,
+    markAllRead,
+    markRead,
+    applyIncoming,
+    applyRemoteDelete,
+    reset,
+  }
 }
