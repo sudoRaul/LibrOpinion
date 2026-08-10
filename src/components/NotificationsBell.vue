@@ -57,8 +57,12 @@ function timeAgo(iso: string): string {
 async function onClickItem(n: AppNotification) {
   await markRead(n.id)
   close()
-  // Sin permalink de cita aún: todas llevan al perfil del actor.
-  if (n.actor?.username) router.push(`/u/${n.actor.username}`)
+  // Like/comment → a la cita concreta; follow → al perfil del actor.
+  if ((n.type === 'like' || n.type === 'comment') && n.quote_id) {
+    router.push(`/q/${n.quote_id}`)
+  } else if (n.actor?.username) {
+    router.push(`/u/${n.actor.username}`)
+  }
 }
 </script>
 

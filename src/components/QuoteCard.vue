@@ -7,8 +7,15 @@ import { useQuotes } from '../composables/useQuotes'
 import { useAuthStore } from '../stores/auth'
 import { timeAgo } from '../lib/format'
 
-const props = defineProps<{ quote: FeedQuote }>()
+// `linkToDetail` es Boolean: si no se pasa, Vue lo pondría a `false`, por eso fijamos
+// el default a `true` con withDefaults (en el feed/perfil la tarjeta SÍ enlaza al detalle).
+const props = withDefaults(defineProps<{ quote: FeedQuote; linkToDetail?: boolean }>(), {
+  linkToDetail: true,
+})
 const emit = defineEmits<{ edit: [quote: FeedQuote]; deleted: [id: string] }>()
+
+// En el permalink (`linkToDetail=false`) la tarjeta ya ES la cita: no enlaza a sí misma.
+const showDetailLink = computed(() => props.linkToDetail)
 
 const auth = useAuthStore()
 const likes = useLikes()
@@ -53,6 +60,17 @@ onMounted(() => document.addEventListener('click', onDocClick))
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
 const like = computed(() => likes.get(props.quote.id))
+
+// La animación del corazón solo debe dispararse al pulsar (no al montar/recargar).
+const likeAnimating = ref(false)
+function onToggleLike() {
+  const wasLiked = like.value.liked
+  likes.toggle(props.quote.id)
+  if (!wasLiked) {
+    likeAnimating.value = true
+    setTimeout(() => (likeAnimating.value = false), 350)
+  }
+}
 
 const displayName = computed(
   () => props.quote.author?.display_name || props.quote.author?.username || 'Lector',
@@ -100,34 +118,39 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
   <article class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
     <!-- Cabecera: autor + menú -->
     <header class="flex items-start justify-between gap-3">
-      <component
-        :is="handle ? 'RouterLink' : 'div'"
-        :to="handle ? `/u/${handle}` : undefined"
-        class="flex min-w-0 items-center gap-3"
-        :class="handle ? 'group/author' : ''"
-      >
-        <img
-          v-if="quote.author?.avatar_url"
-          :src="quote.author.avatar_url"
-          :alt="displayName"
-          class="h-10 w-10 flex-none rounded-full object-cover"
-          referrerpolicy="no-referrer"
-        />
-        <div
-          v-else
-          class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+      <div class="flex min-w-0 items-start gap-3">
+        <component
+          :is="handle ? 'RouterLink' : 'div'"
+          :to="handle ? `/u/${handle}` : undefined"
+          class="flex-none"
         >
-          {{ initials(displayName) }}
-        </div>
+          <img
+            v-if="quote.author?.avatar_url"
+            :src="quote.author.avatar_url"
+            :alt="displayName"
+            class="h-10 w-10 rounded-full object-cover"
+            referrerpolicy="no-referrer"
+          />
+          <div
+            v-else
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+          >
+            {{ initials(displayName) }}
+          </div>
+        </component>
         <div class="min-w-0">
-          <p class="truncate font-medium text-stone-900 group-hover/author:underline dark:text-white">
+          <component
+            :is="handle ? 'RouterLink' : 'div'"
+            :to="handle ? `/u/${handle}` : undefined"
+            class="block truncate font-medium text-stone-900 hover:underline dark:text-white"
+          >
             {{ displayName }}
-          </p>
+          </component>
           <p class="truncate text-sm text-stone-500 dark:text-stone-400">
-            <span v-if="handle">@{{ handle }} · </span>{{ timeAgo(quote.created_at) }}
+            <RouterLink v-if="handle" :to="`/u/${handle}`" class="hover:underline">@{{ handle }}</RouterLink><template v-if="handle"> · </template><RouterLink :to="`/q/${quote.id}`" class="hover:underline">{{ timeAgo(quote.created_at) }}</RouterLink>
           </p>
         </div>
-      </component>
+      </div>
 
       <!-- Menú de la cita (solo si es mía). @click.stop evita que los clics
            internos lleguen a document y cierren el menú por el "clic fuera". -->
@@ -189,39 +212,50 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
       </div>
     </header>
 
-    <!-- Cita -->
-    <blockquote class="mt-4 font-quote text-xl leading-relaxed text-stone-800 dark:text-stone-100">
-      “{{ quote.content }}”
-    </blockquote>
+    <!-- Cuerpo clicable → permalink de la cita (salvo en la propia vista de la cita) -->
+    <component
+      :is="showDetailLink ? 'RouterLink' : 'div'"
+      :to="showDetailLink ? `/q/${quote.id}` : undefined"
+      class="block"
+      :class="showDetailLink ? 'group/detail cursor-pointer' : ''"
+    >
+      <!-- Cita -->
+      <blockquote class="mt-4 font-quote text-xl leading-relaxed text-stone-800 dark:text-stone-100">
+        “{{ quote.content }}”
+      </blockquote>
 
-    <!-- Nota personal -->
-    <p v-if="quote.note" class="mt-3 text-stone-600 dark:text-stone-300">{{ quote.note }}</p>
+      <!-- Nota personal -->
+      <p v-if="quote.note" class="mt-3 text-stone-600 dark:text-stone-300">{{ quote.note }}</p>
 
-    <!-- Libro -->
-    <footer class="mt-4 flex items-center gap-3 rounded-xl bg-stone-50 p-3 dark:bg-stone-800/60">
-      <img
-        v-if="quote.book?.cover_url"
-        :src="quote.book.cover_url"
-        :alt="quote.book?.title"
-        class="h-14 w-10 flex-none rounded object-cover shadow-sm"
-        referrerpolicy="no-referrer"
-      />
-      <div
-        v-else
-        class="flex h-14 w-10 flex-none items-center justify-center rounded bg-stone-200 text-stone-400 dark:bg-stone-700 dark:text-stone-500"
+      <!-- Libro -->
+      <footer
+        class="mt-4 flex items-center gap-3 rounded-xl bg-stone-50 p-3 transition-colors dark:bg-stone-800/60"
+        :class="showDetailLink ? 'group-hover/detail:bg-stone-100 dark:group-hover/detail:bg-stone-800' : ''"
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
-          <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
-        </svg>
-      </div>
-      <div class="min-w-0">
-        <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ quote.book?.title }}</p>
-        <p class="truncate text-sm text-stone-500 dark:text-stone-400">
-          {{ quote.book?.author }}<span v-if="quote.page"> · pág. {{ quote.page }}</span>
-        </p>
-      </div>
-    </footer>
+        <img
+          v-if="quote.book?.cover_url"
+          :src="quote.book.cover_url"
+          :alt="quote.book?.title"
+          class="h-14 w-10 flex-none rounded object-cover shadow-sm"
+          referrerpolicy="no-referrer"
+        />
+        <div
+          v-else
+          class="flex h-14 w-10 flex-none items-center justify-center rounded bg-stone-200 text-stone-400 dark:bg-stone-700 dark:text-stone-500"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+            <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ quote.book?.title }}</p>
+          <p class="truncate text-sm text-stone-500 dark:text-stone-400">
+            {{ quote.book?.author }}<span v-if="quote.page"> · pág. {{ quote.page }}</span>
+          </p>
+        </div>
+      </footer>
+    </component>
 
     <!-- Acciones -->
     <div class="mt-3 flex items-center gap-1 border-t border-stone-100 pt-3 dark:border-stone-800">
@@ -229,11 +263,11 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
         class="group inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
         :class="like.liked ? 'text-rose-600 dark:text-rose-400' : 'text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400'"
         :aria-pressed="like.liked"
-        @click="likes.toggle(quote.id)"
+        @click="onToggleLike"
       >
         <svg
           class="h-5 w-5 transition-transform"
-          :class="like.liked ? 'heart-pop' : 'group-hover:scale-110'"
+          :class="likeAnimating ? 'heart-pop' : 'group-hover:scale-110'"
           viewBox="0 0 24 24"
           :fill="like.liked ? 'currentColor' : 'none'"
           stroke="currentColor"
