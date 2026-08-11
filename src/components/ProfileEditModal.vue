@@ -15,6 +15,7 @@ const username = ref('')
 const displayName = ref('')
 const bio = ref('')
 const avatarUrl = ref('')
+const isPrivate = ref(false)
 const error = ref<string | null>(null)
 const saving = ref(false)
 const uploading = ref(false)
@@ -47,6 +48,7 @@ watch(
       displayName.value = props.profile.display_name ?? ''
       bio.value = props.profile.bio ?? ''
       avatarUrl.value = props.profile.avatar_url ?? ''
+      isPrivate.value = props.profile.is_private
       error.value = null
     }
   },
@@ -68,6 +70,7 @@ async function submit() {
     display_name: displayName.value.trim() || null,
     bio: bio.value.trim() || null,
     avatar_url: avatarUrl.value.trim() || null,
+    is_private: isPrivate.value,
   })
   saving.value = false
 
@@ -185,6 +188,30 @@ async function submit() {
             hint="La subida de imágenes llegará con Storage. De momento, una URL."
             :disabled="saving"
           />
+
+          <!-- Cuenta privada -->
+          <div class="flex items-start justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-3.5 dark:border-stone-800 dark:bg-stone-800/40">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Cuenta privada</p>
+              <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                Solo tus seguidores aceptados verán tus citas. Los nuevos tendrán que solicitar seguirte.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="isPrivate"
+              :disabled="saving"
+              class="relative mt-0.5 inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors disabled:opacity-60"
+              :class="isPrivate ? 'bg-emerald-600' : 'bg-stone-300 dark:bg-stone-600'"
+              @click="isPrivate = !isPrivate"
+            >
+              <span
+                class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform"
+                :class="isPrivate ? 'translate-x-5' : 'translate-x-0.5'"
+              ></span>
+            </button>
+          </div>
 
           <div class="flex justify-end gap-2 pt-2">
             <button

@@ -5,6 +5,8 @@ import { useFeed } from './useFeed'
 import { useLikes } from './useLikes'
 import { useComments } from './useComments'
 import { useNotifications } from './useNotifications'
+import { useFollowRequests } from './useFollowRequests'
+import { reloadProfileIfViewing } from './useProfile'
 
 let channel: RealtimeChannel | null = null
 
@@ -86,7 +88,28 @@ function start() {
       },
       (payload) => {
         const row = payload.new as { id: string }
-        void notifications.applyIncoming(row.id)
+        void notifications.applyIncoming(row.id).then((n) => {
+          if (!n) return
+          // Me aceptaron: si estoy en el perfil del que acepta, pasa a "Siguiendo".
+          if (n.type === 'follow_accepted') reloadProfileIfViewing(n.actor_id)
+          // Nueva solicitud: mantengo vivo el recuento de "Solicitudes".
+          if (n.type === 'follow_request') void useFollowRequests().loadCount()
+        })
+      },
+    )
+    // Un follow MÍO se borró (me rechazaron la solicitud o me quitaron como
+    // seguidor): si estoy en el perfil de esa persona, su botón vuelve a "Seguir".
+    .on(
+      'postgres_changes',
+      {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'follows',
+        filter: `follower_id=eq.${myId}`,
+      },
+      (payload) => {
+        const row = payload.old as { following_id?: string }
+        if (row.following_id) reloadProfileIfViewing(row.following_id)
       },
     )
     // Notificación mía borrada (unfollow/unlike): la quito de la campana en vivo.

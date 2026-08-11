@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useProfile } from '../composables/useProfile'
+import { useProfile, clearActiveProfile } from '../composables/useProfile'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
@@ -19,18 +19,24 @@ const {
   quotes,
   followers,
   following,
-  isFollowing,
+  followState,
+  canSeeContent,
+  canSeeLists,
   isSelf,
   loading,
   notFound,
   error,
   followBusy,
+  hasIncomingRequest,
+  incomingBusy,
   quotesHasMore,
   quotesLoadingMore,
   load,
   loadMoreQuotes,
   toggleFollow,
   refreshCounts,
+  acceptIncomingRequest,
+  rejectIncomingRequest,
 } = useProfile()
 
 // Scroll infinito de las citas del perfil.
@@ -49,7 +55,10 @@ onMounted(() => {
   )
   if (sentinel.value) observer.observe(sentinel.value)
 })
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  clearActiveProfile()
+})
 
 const displayName = computed(
   () => profile.value?.display_name || profile.value?.username || 'Lector',
@@ -70,7 +79,7 @@ const editingQuote = ref<FeedQuote | null>(null)
 const followListOpen = ref(false)
 const followListMode = ref<FollowListMode>('followers')
 function openFollowList(mode: FollowListMode) {
-  if (!profile.value) return
+  if (!profile.value || !canSeeLists.value) return
   followListMode.value = mode
   followListOpen.value = true
 }
@@ -151,6 +160,32 @@ function onProfileUpdated(newUsername: string) {
 
       <!-- Perfil -->
       <template v-else-if="profile">
+        <!-- Aviso: esta persona me ha solicitado seguirme (aceptar/rechazar sin salir) -->
+        <div
+          v-if="hasIncomingRequest"
+          class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30"
+        >
+          <p class="text-sm text-emerald-900 dark:text-emerald-200">
+            <span class="font-semibold">@{{ profile.username }}</span> quiere seguirte
+          </p>
+          <div class="flex flex-none gap-2">
+            <button
+              :disabled="incomingBusy"
+              class="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              @click="acceptIncomingRequest"
+            >
+              Aceptar
+            </button>
+            <button
+              :disabled="incomingBusy"
+              class="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-800/70 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
+              @click="rejectIncomingRequest"
+            >
+              Rechazar
+            </button>
+          </div>
+        </div>
+
         <section class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -168,28 +203,50 @@ function onProfileUpdated(newUsername: string) {
                 {{ initials }}
               </div>
               <div class="min-w-0">
-                <h1 class="font-display text-2xl font-semibold text-stone-900 dark:text-white">{{ displayName }}</h1>
+                <h1 class="flex items-center gap-1.5 font-display text-2xl font-semibold text-stone-900 dark:text-white">
+                  {{ displayName }}
+                  <svg
+                    v-if="profile.is_private"
+                    class="h-4 w-4 text-stone-400 dark:text-stone-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-label="Cuenta privada"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </h1>
                 <p class="text-stone-500 dark:text-stone-400">@{{ profile.username }}</p>
               </div>
             </div>
 
-            <!-- Botón seguir / dejar de seguir -->
+            <!-- Botón: seguir / solicitar / siguiendo / solicitado (o editar si es propio) -->
             <button
               v-if="!isSelf"
               :disabled="followBusy"
               class="flex-none rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
               :class="
-                isFollowing
+                followState === 'accepted'
                   ? 'group border border-stone-300 text-stone-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-300 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-                  : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500'
+                  : followState === 'pending'
+                    ? 'group border border-stone-300 text-stone-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-400 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+                    : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500'
               "
               @click="toggleFollow"
             >
-              <template v-if="isFollowing">
+              <template v-if="followState === 'accepted'">
                 <span class="group-hover:hidden">Siguiendo</span>
                 <span class="hidden group-hover:inline">Dejar de seguir</span>
               </template>
-              <template v-else>Seguir</template>
+              <template v-else-if="followState === 'pending'">
+                <span class="group-hover:hidden">Solicitado</span>
+                <span class="hidden group-hover:inline">Cancelar</span>
+              </template>
+              <template v-else>{{ profile.is_private ? 'Solicitar seguir' : 'Seguir' }}</template>
             </button>
             <button
               v-else
@@ -204,13 +261,17 @@ function onProfileUpdated(newUsername: string) {
 
           <div class="mt-4 flex gap-6 text-sm">
             <button
-              class="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+              :disabled="!canSeeLists"
+              class="text-stone-600 transition-colors disabled:cursor-default dark:text-stone-400"
+              :class="canSeeLists ? 'hover:text-stone-900 dark:hover:text-white' : ''"
               @click="openFollowList('followers')"
             >
               <span class="font-semibold text-stone-900 dark:text-white">{{ followers }}</span> seguidores
             </button>
             <button
-              class="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+              :disabled="!canSeeLists"
+              class="text-stone-600 transition-colors disabled:cursor-default dark:text-stone-400"
+              :class="canSeeLists ? 'hover:text-stone-900 dark:hover:text-white' : ''"
               @click="openFollowList('following')"
             >
               <span class="font-semibold text-stone-900 dark:text-white">{{ following }}</span> siguiendo
@@ -223,38 +284,61 @@ function onProfileUpdated(newUsername: string) {
           Citas
         </h2>
 
-        <div v-if="!quotes.length" class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500 dark:border-stone-700 dark:text-stone-400">
-          {{ isSelf ? 'Aún no has publicado ninguna cita.' : 'Todavía no ha publicado citas.' }}
-        </div>
-        <div v-else class="space-y-4">
-          <QuoteCard
-            v-for="quote in quotes"
-            :key="quote.id"
-            :quote="quote"
-            @edit="editingQuote = $event"
-            @deleted="onQuoteDeleted"
-          />
-        </div>
-
-        <!-- Scroll infinito: centinela + botón de respaldo -->
-        <div v-if="quotes.length && quotesHasMore" ref="sentinel" class="pt-4">
-          <div v-if="quotesLoadingMore" class="space-y-4">
-            <div v-for="n in 2" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+        <!-- Cuenta privada que no puedo ver: candado -->
+        <div
+          v-if="!canSeeContent"
+          class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
+        >
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
           </div>
-          <button
-            v-else
-            class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
-            @click="loadMoreQuotes"
-          >
-            Cargar más
-          </button>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Esta cuenta es privada</p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
+            {{
+              followState === 'pending'
+                ? 'Tu solicitud está pendiente de aprobación. Cuando te acepte, verás sus citas.'
+                : 'Solicita seguir a @' + profile.username + ' para ver sus citas.'
+            }}
+          </p>
         </div>
 
-        <!-- Fin de las citas del perfil -->
-        <EndOfList
-          v-if="quotes.length && !quotesHasMore"
-          :subtitle="isSelf ? 'Has llegado al final de tus citas.' : 'No hay más citas de este lector, por ahora.'"
-        />
+        <template v-else>
+          <div v-if="!quotes.length" class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500 dark:border-stone-700 dark:text-stone-400">
+            {{ isSelf ? 'Aún no has publicado ninguna cita.' : 'Todavía no ha publicado citas.' }}
+          </div>
+          <div v-else class="space-y-4">
+            <QuoteCard
+              v-for="quote in quotes"
+              :key="quote.id"
+              :quote="quote"
+              @edit="editingQuote = $event"
+              @deleted="onQuoteDeleted"
+            />
+          </div>
+
+          <!-- Scroll infinito: centinela + botón de respaldo -->
+          <div v-if="quotes.length && quotesHasMore" ref="sentinel" class="pt-4">
+            <div v-if="quotesLoadingMore" class="space-y-4">
+              <div v-for="n in 2" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+            </div>
+            <button
+              v-else
+              class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
+              @click="loadMoreQuotes"
+            >
+              Cargar más
+            </button>
+          </div>
+
+          <!-- Fin de las citas del perfil -->
+          <EndOfList
+            v-if="quotes.length && !quotesHasMore"
+            :subtitle="isSelf ? 'Has llegado al final de tus citas.' : 'No hay más citas de este lector, por ahora.'"
+          />
+        </template>
 
         <ProfileEditModal
           :open="editing"

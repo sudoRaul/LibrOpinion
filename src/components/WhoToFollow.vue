@@ -67,7 +67,7 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
           class="mt-3 w-full rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="follow(p)"
         >
-          Seguir
+          {{ p.is_private ? 'Solicitar' : 'Seguir' }}
         </button>
       </article>
     </div>

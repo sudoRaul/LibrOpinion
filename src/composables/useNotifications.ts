@@ -88,17 +88,20 @@ async function markRead(id: string) {
   }
 }
 
-/** Realtime: llega una notificación nueva; la traigo con sus embeds y la encabezo. */
-async function applyIncoming(id: string) {
-  if (items.value.some((n) => n.id === id)) return
+/** Realtime: llega una notificación nueva; la traigo con sus embeds y la encabezo.
+ *  Devuelve la notificación (para que quien escucha reaccione según su tipo). */
+async function applyIncoming(id: string): Promise<AppNotification | null> {
+  const existing = items.value.find((n) => n.id === id)
+  if (existing) return existing
   const { data } = await supabase
     .from('notifications')
     .select(NOTIFICATION_COLUMNS)
     .eq('id', id)
     .maybeSingle()
-  if (!data) return
+  if (!data) return null
   items.value = [data, ...items.value]
   if (!data.read) unread.value += 1
+  return data
 }
 
 /** Realtime: una notificación mía se borró (unfollow/unlike). La quito y ajusto el contador. */

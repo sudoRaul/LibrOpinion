@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/auth'
 import { useFeed } from './useFeed'
 
-const SUGGESTION_COLUMNS = 'id, username, display_name, avatar_url, bio'
+const SUGGESTION_COLUMNS = 'id, username, display_name, avatar_url, bio, is_private'
 
 const suggestionProbe = supabase.from('profiles').select(SUGGESTION_COLUMNS)
 export type Suggestion = QueryData<typeof suggestionProbe>[number]
@@ -60,9 +60,12 @@ async function follow(profile: Suggestion) {
   const index = suggestions.value.findIndex((s) => s.id === profile.id)
   suggestions.value = suggestions.value.filter((s) => s.id !== profile.id)
 
-  const { error } = await supabase
+  // La BD decide el status (pending si el destino es privado). Lo pedimos de vuelta.
+  const { data, error } = await supabase
     .from('follows')
     .insert({ follower_id: auth.user.id, following_id: profile.id })
+    .select('status')
+    .single()
 
   const next = new Set(busy.value)
   next.delete(profile.id)
@@ -76,8 +79,11 @@ async function follow(profile: Suggestion) {
     return
   }
 
-  // Éxito: sus citas entran a mi feed y salen de "Descubre la comunidad".
-  await useFeed().onFollowedAuthor(profile.id)
+  // Si fue aceptado (cuenta pública), sus citas entran a mi feed y salen de la
+  // comunidad. Si quedó 'pending' (privada), es una solicitud: no hay nada que traer.
+  if (data?.status === 'accepted') {
+    await useFeed().onFollowedAuthor(profile.id)
+  }
 }
 
 function isBusy(id: string): boolean {

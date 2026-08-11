@@ -37,11 +37,13 @@ export function useFollowList() {
             .from('follows')
             .select('profile:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url)')
             .eq('following_id', userId)
+            .eq('status', 'accepted')
             .order('created_at', { ascending: false })
         : supabase
             .from('follows')
             .select('profile:profiles!follows_following_id_fkey(id, username, display_name, avatar_url)')
             .eq('follower_id', userId)
+            .eq('status', 'accepted')
             .order('created_at', { ascending: false })
 
     const { data, error: listErr } = await query

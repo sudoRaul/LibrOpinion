@@ -2,19 +2,56 @@
 import { onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotifications, type AppNotification } from '../composables/useNotifications'
+import { useFollowRequests } from '../composables/useFollowRequests'
 
 const router = useRouter()
-const { items, unread, loading, loaded, load, markAllRead, markRead } = useNotifications()
+const { items, unread, loading, loaded, load, markAllRead, markRead, applyRemoteDelete } =
+  useNotifications()
+const { count: requestCount, loadCount: loadRequestCount, accept, reject } = useFollowRequests()
 
 const open = ref(false)
 const root = ref<HTMLElement | null>(null)
+const busy = ref<Set<string>>(new Set())
 
 function toggle() {
   open.value = !open.value
-  if (open.value && !loaded.value) load()
+  if (open.value) {
+    if (!loaded.value) load()
+    loadRequestCount()
+  }
 }
 function close() {
   open.value = false
+}
+
+function goToRequests() {
+  close()
+  router.push('/solicitudes')
+}
+
+function goToActor(n: AppNotification) {
+  if (!n.actor?.username) return
+  close()
+  router.push(`/u/${n.actor.username}`)
+}
+
+async function onAcceptRequest(n: AppNotification) {
+  if (busy.value.has(n.id)) return
+  busy.value = new Set(busy.value).add(n.id)
+  const ok = await accept(n.actor_id)
+  if (ok) applyRemoteDelete(n.id, !n.read) // la solicitud desaparece de la campana
+  const next = new Set(busy.value)
+  next.delete(n.id)
+  busy.value = next
+}
+async function onRejectRequest(n: AppNotification) {
+  if (busy.value.has(n.id)) return
+  busy.value = new Set(busy.value).add(n.id)
+  const ok = await reject(n.actor_id)
+  if (ok) applyRemoteDelete(n.id, !n.read)
+  const next = new Set(busy.value)
+  next.delete(n.id)
+  busy.value = next
 }
 
 // Cerrar al pulsar fuera del componente.
@@ -39,6 +76,8 @@ function verb(n: AppNotification): string {
   if (n.type === 'follow') return 'empezó a seguirte'
   if (n.type === 'like') return 'le dio me gusta a tu cita'
   if (n.type === 'comment') return 'comentó tu cita'
+  if (n.type === 'follow_request') return 'quiere seguirte'
+  if (n.type === 'follow_accepted') return 'aceptó tu solicitud'
   return ''
 }
 
@@ -104,6 +143,20 @@ async function onClickItem(n: AppNotification) {
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto">
+          <!-- Acceso a Solicitudes -->
+          <button
+            v-if="requestCount > 0"
+            class="flex w-full items-center justify-between border-b border-stone-100 px-4 py-2.5 text-left text-sm text-emerald-700 transition-colors hover:bg-emerald-50/60 dark:border-stone-800/70 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+            @click="goToRequests"
+          >
+            <span class="font-medium">
+              {{ requestCount }} solicitud{{ requestCount === 1 ? '' : 'es' }} de seguimiento
+            </span>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+
           <!-- Cargando -->
           <div v-if="loading && !items.length" class="space-y-2 p-3">
             <div v-for="n in 4" :key="n" class="h-12 animate-pulse rounded-lg bg-stone-200/70 dark:bg-stone-800/60"></div>
@@ -117,7 +170,54 @@ async function onClickItem(n: AppNotification) {
           <!-- Lista -->
           <ul v-else class="divide-y divide-stone-100 dark:divide-stone-800/70">
             <li v-for="n in items" :key="n.id">
+              <!-- Solicitud: la zona del usuario navega a su perfil; los botones actúan -->
+              <div
+                v-if="n.type === 'follow_request'"
+                class="px-4 py-3"
+                :class="!n.read ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''"
+              >
+                <button class="flex w-full items-start gap-3 text-left" @click="goToActor(n)">
+                  <img
+                    v-if="n.actor?.avatar_url"
+                    :src="n.actor.avatar_url"
+                    :alt="actorName(n)"
+                    class="h-9 w-9 flex-none rounded-full object-cover"
+                    referrerpolicy="no-referrer"
+                  />
+                  <span
+                    v-else
+                    class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+                  >
+                    {{ actorInitials(n) }}
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm text-stone-800 dark:text-stone-200">
+                      <span class="font-semibold">{{ actorName(n) }}</span> {{ verb(n) }}
+                    </span>
+                    <span class="mt-0.5 block text-xs text-stone-400 dark:text-stone-500">{{ timeAgo(n.created_at) }}</span>
+                  </span>
+                </button>
+                <div class="mt-2 flex gap-2 pl-12">
+                  <button
+                    :disabled="busy.has(n.id)"
+                    class="rounded-lg bg-emerald-700 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                    @click="onAcceptRequest(n)"
+                  >
+                    Aceptar
+                  </button>
+                  <button
+                    :disabled="busy.has(n.id)"
+                    class="rounded-lg border border-stone-300 px-3 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                    @click="onRejectRequest(n)"
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Resto de notificaciones: navegan al pulsar -->
               <button
+                v-else
                 class="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/50"
                 :class="!n.read ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''"
                 @click="onClickItem(n)"

@@ -129,6 +129,7 @@ export const useAuthStore = defineStore('auth', {
       display_name: string | null
       bio: string | null
       avatar_url: string | null
+      is_private?: boolean
     }): Promise<{ error: string | null }> {
       if (!this.user) return { error: 'No hay ninguna sesión activa.' }
       const { error } = await supabase
@@ -138,6 +139,7 @@ export const useAuthStore = defineStore('auth', {
           display_name: fields.display_name,
           bio: fields.bio,
           avatar_url: fields.avatar_url,
+          ...(fields.is_private !== undefined ? { is_private: fields.is_private } : {}),
           updated_at: new Date().toISOString(),
         })
         .eq('id', this.user.id)
