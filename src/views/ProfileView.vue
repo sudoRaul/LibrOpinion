@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProfile } from '../composables/useProfile'
 import ThemeToggle from '../components/ThemeToggle.vue'
@@ -8,6 +8,7 @@ import ProfileEditModal from '../components/ProfileEditModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
 import FollowListModal from '../components/FollowListModal.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
+import EndOfList from '../components/EndOfList.vue'
 import type { FeedQuote } from '../composables/useFeed'
 import type { FollowListMode } from '../composables/useFollowList'
 
@@ -24,10 +25,31 @@ const {
   notFound,
   error,
   followBusy,
+  quotesHasMore,
+  quotesLoadingMore,
   load,
+  loadMoreQuotes,
   toggleFollow,
   refreshCounts,
 } = useProfile()
+
+// Scroll infinito de las citas del perfil.
+const sentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+watch(sentinel, (el) => {
+  observer?.disconnect()
+  if (el) observer?.observe(el)
+})
+onMounted(() => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) loadMoreQuotes()
+    },
+    { rootMargin: '300px' },
+  )
+  if (sentinel.value) observer.observe(sentinel.value)
+})
+onBeforeUnmount(() => observer?.disconnect())
 
 const displayName = computed(
   () => profile.value?.display_name || profile.value?.username || 'Lector',
@@ -213,6 +235,26 @@ function onProfileUpdated(newUsername: string) {
             @deleted="onQuoteDeleted"
           />
         </div>
+
+        <!-- Scroll infinito: centinela + botón de respaldo -->
+        <div v-if="quotes.length && quotesHasMore" ref="sentinel" class="pt-4">
+          <div v-if="quotesLoadingMore" class="space-y-4">
+            <div v-for="n in 2" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+          </div>
+          <button
+            v-else
+            class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
+            @click="loadMoreQuotes"
+          >
+            Cargar más
+          </button>
+        </div>
+
+        <!-- Fin de las citas del perfil -->
+        <EndOfList
+          v-if="quotes.length && !quotesHasMore"
+          :subtitle="isSelf ? 'Has llegado al final de tus citas.' : 'No hay más citas de este lector, por ahora.'"
+        />
 
         <ProfileEditModal
           :open="editing"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useFeed } from '../composables/useFeed'
@@ -11,6 +11,7 @@ import QuoteEditModal from '../components/QuoteEditModal.vue'
 import ProfileSearch from '../components/ProfileSearch.vue'
 import WhoToFollow from '../components/WhoToFollow.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
+import EndOfList from '../components/EndOfList.vue'
 import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
@@ -20,10 +21,13 @@ const {
   loading,
   error,
   loaded,
+  hasMore,
+  loadingMore,
   communityQuotes,
   communityLoading,
   communityLoaded,
   loadFeed,
+  loadMore,
   loadCommunity,
 } = useFeed()
 
@@ -32,8 +36,17 @@ const { load: loadSuggestions } = useSuggestions()
 const composerOpen = ref(false)
 const editingQuote = ref<FeedQuote | null>(null)
 
-// Tras qué cita insertar el bloque "A quién seguir" (3.ª, o la última si hay menos).
-const suggestionSlot = computed(() => Math.min(2, quotes.value.length - 1))
+// Zona "Sigue explorando" (personas + comunidad): aparece cuando no hay feed
+// propio o cuando ya lo has agotado (no mientras quedan más citas por cargar).
+const showDiscovery = computed(() => !quotes.value.length || !hasMore.value)
+
+// Scroll infinito: observamos un centinela al final del feed.
+const sentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+watch(sentinel, (el) => {
+  observer?.disconnect()
+  if (el) observer?.observe(el)
+})
 
 function onQuoteDeleted(id: string) {
   quotes.value = quotes.value.filter((q) => q.id !== id)
@@ -44,10 +57,19 @@ function onQuoteUpdated(updated: FeedQuote) {
 }
 
 onMounted(async () => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) loadMore()
+    },
+    { rootMargin: '300px' },
+  )
+  if (sentinel.value) observer.observe(sentinel.value)
+
   if (!loaded.value) await loadFeed()
   loadCommunity()
   loadSuggestions()
 })
+onBeforeUnmount(() => observer?.disconnect())
 
 async function logout() {
   await auth.signOut()
@@ -136,64 +158,87 @@ async function logout() {
       <template v-else>
         <!-- Tu feed (citas tuyas + de quien sigues) -->
         <div v-if="quotes.length" class="space-y-4">
-          <template v-for="(quote, i) in quotes" :key="quote.id">
-            <QuoteCard
-              :quote="quote"
-              @edit="editingQuote = $event"
-              @deleted="onQuoteDeleted"
-            />
-            <WhoToFollow v-if="i === suggestionSlot" />
-          </template>
+          <QuoteCard
+            v-for="quote in quotes"
+            :key="quote.id"
+            :quote="quote"
+            @edit="editingQuote = $event"
+            @deleted="onQuoteDeleted"
+          />
         </div>
 
-        <!-- Feed vacío: las sugerencias suben arriba, donde más ayudan -->
-        <WhoToFollow v-if="!quotes.length" class="mb-6" />
-
-        <!-- Descubre la comunidad -->
-        <section v-if="communityQuotes.length" :class="quotes.length ? 'mt-10' : ''">
-          <div class="mb-4">
-            <h2 class="font-display text-lg font-semibold text-stone-900 dark:text-white">
-              {{ quotes.length ? 'Descubre la comunidad' : 'Aún no sigues a nadie' }}
-            </h2>
-            <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
-              {{
-                quotes.length
-                  ? 'Citas recientes de otros lectores que quizá quieras seguir.'
-                  : 'Mientras tanto, echa un vistazo a lo que comparte la comunidad.'
-              }}
-            </p>
+        <!-- Scroll infinito del feed: centinela + botón de respaldo -->
+        <div v-if="quotes.length && hasMore" ref="sentinel" class="pt-4">
+          <div v-if="loadingMore" class="space-y-4">
+            <div v-for="n in 2" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
           </div>
-          <div class="space-y-4">
-            <QuoteCard
-              v-for="quote in communityQuotes"
-              :key="quote.id"
-              :quote="quote"
-            />
-          </div>
-        </section>
-
-        <!-- Feed vacío y comunidad aún cargando: esqueleto (evita parpadeo) -->
-        <div v-else-if="!quotes.length && communityLoading" class="space-y-4">
-          <div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
-        </div>
-
-        <!-- Nada por ningún lado (ni feed ni comunidad) -->
-        <div
-          v-else-if="!quotes.length && communityLoaded"
-          class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
-        >
-          <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">
-            Tu feed está en blanco
-          </p>
-          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
-            Publica tu primera cita o sigue a otros lectores para llenar esta página.
-          </p>
           <button
-            class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-            @click="composerOpen = true"
+            v-else
+            class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
+            @click="loadMore"
           >
-            Publicar una cita
+            Cargar más
           </button>
+        </div>
+
+        <!-- Fin del feed: transición hacia el descubrimiento -->
+        <EndOfList
+          v-if="quotes.length && !hasMore"
+          subtitle="Aquí no se acaba: sigue explorando lectores y citas de la comunidad."
+        />
+
+        <!-- Zona "Sigue explorando": personas + citas de la comunidad.
+             Aparece con el feed vacío o cuando ya lo has agotado. -->
+        <div v-if="showDiscovery" class="space-y-8">
+          <!-- A quién seguir (no renderiza nada si no hay sugerencias) -->
+          <WhoToFollow />
+
+          <!-- Descubre la comunidad -->
+          <section v-if="communityQuotes.length">
+            <div class="mb-4">
+              <h2 class="font-display text-lg font-semibold text-stone-900 dark:text-white">
+                {{ quotes.length ? 'Descubre la comunidad' : 'Aún no sigues a nadie' }}
+              </h2>
+              <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                {{
+                  quotes.length
+                    ? 'Citas recientes de otros lectores que quizá quieras seguir.'
+                    : 'Mientras tanto, echa un vistazo a lo que comparte la comunidad.'
+                }}
+              </p>
+            </div>
+            <div class="space-y-4">
+              <QuoteCard
+                v-for="quote in communityQuotes"
+                :key="quote.id"
+                :quote="quote"
+              />
+            </div>
+          </section>
+
+          <!-- Feed vacío y comunidad aún cargando: esqueleto (evita parpadeo) -->
+          <div v-else-if="!quotes.length && communityLoading" class="space-y-4">
+            <div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+          </div>
+
+          <!-- Nada por ningún lado (ni feed ni comunidad) -->
+          <div
+            v-else-if="!quotes.length && communityLoaded"
+            class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
+          >
+            <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">
+              Tu feed está en blanco
+            </p>
+            <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
+              Publica tu primera cita o sigue a otros lectores para llenar esta página.
+            </p>
+            <button
+              class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              @click="composerOpen = true"
+            >
+              Publicar una cita
+            </button>
+          </div>
         </div>
       </template>
     </main>

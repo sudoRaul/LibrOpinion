@@ -8,6 +8,8 @@ import { useComments } from './useComments'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
 
+const PAGE_SIZE = 20
+
 export function useProfile() {
   const profile = ref<Profile | null>(null)
   const quotes = ref<FeedQuote[]>([])
@@ -19,6 +21,9 @@ export function useProfile() {
   const notFound = ref(false)
   const error = ref<string | null>(null)
   const followBusy = ref(false)
+  // Paginación de las citas del perfil (cursor por fecha).
+  const quotesHasMore = ref(false)
+  const quotesLoadingMore = ref(false)
 
   async function load(username: string) {
     const auth = useAuthStore()
@@ -50,7 +55,7 @@ export function useProfile() {
     const [followersRes, followingRes, quotesRes, followingMeRes] = await Promise.all([
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', prof.id),
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', prof.id),
-      supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false }).limit(PAGE_SIZE),
       auth.user && auth.user.id !== prof.id
         ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', auth.user.id).eq('following_id', prof.id)
         : Promise.resolve({ count: 0 }),
@@ -59,12 +64,40 @@ export function useProfile() {
     followers.value = followersRes.count ?? 0
     following.value = followingRes.count ?? 0
     quotes.value = quotesRes.data ?? []
+    quotesHasMore.value = (quotesRes.data?.length ?? 0) === PAGE_SIZE
     isFollowing.value = (followingMeRes.count ?? 0) > 0
 
     useComments().hydrateCounts(quotes.value)
     await useLikes().hydrate(quotes.value)
 
     loading.value = false
+  }
+
+  /** Carga más citas del perfil (anteriores a la última visible). */
+  async function loadMoreQuotes() {
+    if (!profile.value || quotesLoadingMore.value || !quotesHasMore.value || !quotes.value.length) {
+      return
+    }
+    quotesLoadingMore.value = true
+    const last = quotes.value[quotes.value.length - 1]
+
+    const { data } = await supabase
+      .from('quotes')
+      .select(QUOTE_COLUMNS)
+      .eq('user_id', profile.value.id)
+      .lt('created_at', last.created_at)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+
+    if (data) {
+      const existing = new Set(quotes.value.map((q) => q.id))
+      const fresh = data.filter((q) => !existing.has(q.id))
+      quotes.value = [...quotes.value, ...fresh]
+      quotesHasMore.value = data.length === PAGE_SIZE
+      useComments().hydrateCounts(fresh)
+      await useLikes().hydrate(fresh)
+    }
+    quotesLoadingMore.value = false
   }
 
   /** Recuenta seguidores/seguidos del perfil (tras cambios hechos desde las listas). */
@@ -124,7 +157,10 @@ export function useProfile() {
     notFound,
     error,
     followBusy,
+    quotesHasMore,
+    quotesLoadingMore,
     load,
+    loadMoreQuotes,
     toggleFollow,
     refreshCounts,
   }

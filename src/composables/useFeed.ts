@@ -15,11 +15,16 @@ export const QUOTE_COLUMNS =
 const feedQueryProbe = supabase.from('quotes').select(QUOTE_COLUMNS)
 export type FeedQuote = QueryData<typeof feedQueryProbe>[number]
 
+const PAGE_SIZE = 20
+
 // Estado singleton a nivel de módulo: la vista del feed y el compositor lo comparten.
 const quotes = ref<FeedQuote[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const loaded = ref(false)
+// Paginación por cursor de fecha (robusta ante prepends del realtime).
+const hasMore = ref(true)
+const loadingMore = ref(false)
 // Autores cuyo contenido entra en mi feed (yo + a quién sigo). Lo usa Realtime.
 const followedAuthors = ref<Set<string>>(new Set())
 
@@ -56,17 +61,46 @@ async function loadFeed() {
     .select(QUOTE_COLUMNS)
     .in('user_id', authorIds)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(PAGE_SIZE)
 
   if (quotesErr) {
     error.value = 'No se pudo cargar tu feed.'
   } else {
     quotes.value = data ?? []
+    hasMore.value = (data?.length ?? 0) === PAGE_SIZE
     loaded.value = true
     useComments().hydrateCounts(quotes.value)
     await useLikes().hydrate(quotes.value)
   }
   loading.value = false
+}
+
+/** Carga la siguiente página del feed (citas anteriores a la última visible). */
+async function loadMore() {
+  const auth = useAuthStore()
+  if (!auth.user || loadingMore.value || !hasMore.value || !quotes.value.length) return
+
+  loadingMore.value = true
+  const authorIds = [...followedAuthors.value]
+  const last = quotes.value[quotes.value.length - 1]
+
+  const { data, error: moreErr } = await supabase
+    .from('quotes')
+    .select(QUOTE_COLUMNS)
+    .in('user_id', authorIds)
+    .lt('created_at', last.created_at)
+    .order('created_at', { ascending: false })
+    .limit(PAGE_SIZE)
+
+  if (!moreErr && data) {
+    const existing = new Set(quotes.value.map((q) => q.id))
+    const fresh = data.filter((q) => !existing.has(q.id))
+    quotes.value = [...quotes.value, ...fresh]
+    hasMore.value = data.length === PAGE_SIZE
+    useComments().hydrateCounts(fresh)
+    await useLikes().hydrate(fresh)
+  }
+  loadingMore.value = false
 }
 
 /**
@@ -165,10 +199,13 @@ export function useFeed() {
     loading,
     error,
     loaded,
+    hasMore,
+    loadingMore,
     communityQuotes,
     communityLoading,
     communityLoaded,
     loadFeed,
+    loadMore,
     loadCommunity,
     prependQuote,
     isFollowed,
