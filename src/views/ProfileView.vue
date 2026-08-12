@@ -29,6 +29,9 @@ const {
   followBusy,
   hasIncomingRequest,
   incomingBusy,
+  iBlockedThem,
+  blockedByThem,
+  blockBusy,
   quotesHasMore,
   quotesLoadingMore,
   load,
@@ -37,7 +40,23 @@ const {
   refreshCounts,
   acceptIncomingRequest,
   rejectIncomingRequest,
+  block,
+  unblock,
 } = useProfile()
+
+// Menú ⋯ del perfil (bloquear).
+const menuOpen = ref(false)
+const menuRoot = ref<HTMLElement | null>(null)
+function onMenuDocClick(e: MouseEvent) {
+  if (menuRoot.value && !menuRoot.value.contains(e.target as Node)) menuOpen.value = false
+}
+onMounted(() => document.addEventListener('click', onMenuDocClick))
+onBeforeUnmount(() => document.removeEventListener('click', onMenuDocClick))
+
+async function onBlock() {
+  menuOpen.value = false
+  await block()
+}
 
 // Scroll infinito de las citas del perfil.
 const sentinel = ref<HTMLElement | null>(null)
@@ -160,9 +179,24 @@ function onProfileUpdated(newUsername: string) {
 
       <!-- Perfil -->
       <template v-else-if="profile">
+        <!-- Este usuario me ha bloqueado: perfil no disponible -->
+        <div
+          v-if="blockedByThem"
+          class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
+        >
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
+            </svg>
+          </div>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Perfil no disponible</p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">No puedes ver este perfil.</p>
+        </div>
+
+        <template v-else>
         <!-- Aviso: esta persona me ha solicitado seguirme (aceptar/rechazar sin salir) -->
         <div
-          v-if="hasIncomingRequest"
+          v-if="hasIncomingRequest && !iBlockedThem"
           class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30"
         >
           <p class="text-sm text-emerald-900 dark:text-emerald-200">
@@ -224,30 +258,71 @@ function onProfileUpdated(newUsername: string) {
               </div>
             </div>
 
-            <!-- Botón: seguir / solicitar / siguiendo / solicitado (o editar si es propio) -->
-            <button
-              v-if="!isSelf"
-              :disabled="followBusy"
-              class="flex-none rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
-              :class="
-                followState === 'accepted'
-                  ? 'group border border-stone-300 text-stone-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-300 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-                  : followState === 'pending'
-                    ? 'group border border-stone-300 text-stone-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-400 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-                    : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500'
-              "
-              @click="toggleFollow"
-            >
-              <template v-if="followState === 'accepted'">
-                <span class="group-hover:hidden">Siguiendo</span>
-                <span class="hidden group-hover:inline">Dejar de seguir</span>
-              </template>
-              <template v-else-if="followState === 'pending'">
-                <span class="group-hover:hidden">Solicitado</span>
-                <span class="hidden group-hover:inline">Cancelar</span>
-              </template>
-              <template v-else>{{ profile.is_private ? 'Solicitar seguir' : 'Seguir' }}</template>
-            </button>
+            <!-- Acciones (perfil ajeno) -->
+            <div v-if="!isSelf" ref="menuRoot" class="flex flex-none items-center gap-2">
+              <!-- Lo tengo bloqueado → desbloquear -->
+              <button
+                v-if="iBlockedThem"
+                :disabled="blockBusy"
+                class="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                @click="unblock"
+              >
+                Desbloquear
+              </button>
+
+              <!-- Follow tri-estado -->
+              <button
+                v-else
+                :disabled="followBusy"
+                class="rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
+                :class="
+                  followState === 'accepted'
+                    ? 'group border border-stone-300 text-stone-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-300 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+                    : followState === 'pending'
+                      ? 'group border border-stone-300 text-stone-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-400 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+                      : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500'
+                "
+                @click="toggleFollow"
+              >
+                <template v-if="followState === 'accepted'">
+                  <span class="group-hover:hidden">Siguiendo</span>
+                  <span class="hidden group-hover:inline">Dejar de seguir</span>
+                </template>
+                <template v-else-if="followState === 'pending'">
+                  <span class="group-hover:hidden">Solicitado</span>
+                  <span class="hidden group-hover:inline">Cancelar</span>
+                </template>
+                <template v-else>{{ profile.is_private ? 'Solicitar seguir' : 'Seguir' }}</template>
+              </button>
+
+              <!-- Menú ⋯ (bloquear) -->
+              <div v-if="!iBlockedThem" class="relative" @click.stop>
+                <button
+                  class="rounded-lg p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+                  aria-label="Más opciones"
+                  @click="menuOpen = !menuOpen"
+                >
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" />
+                  </svg>
+                </button>
+                <div
+                  v-if="menuOpen"
+                  class="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-800"
+                >
+                  <button
+                    class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                    @click="onBlock"
+                  >
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
+                    </svg>
+                    Bloquear
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <button
               v-else
               class="flex-none rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
@@ -284,9 +359,23 @@ function onProfileUpdated(newUsername: string) {
           Citas
         </h2>
 
+        <!-- Lo he bloqueado -->
+        <div
+          v-if="iBlockedThem"
+          class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
+        >
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
+            </svg>
+          </div>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Has bloqueado a @{{ profile.username }}</p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">No veis vuestro contenido mutuamente. Desbloquea para volver a interactuar.</p>
+        </div>
+
         <!-- Cuenta privada que no puedo ver: candado -->
         <div
-          v-if="!canSeeContent"
+          v-else-if="!canSeeContent"
           class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
         >
           <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
@@ -359,6 +448,7 @@ function onProfileUpdated(newUsername: string) {
           @close="followListOpen = false"
           @changed="refreshCounts"
         />
+        </template>
       </template>
     </main>
   </div>

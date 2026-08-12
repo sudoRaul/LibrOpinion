@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/auth'
 import type { Database } from '../lib/database.types'
-import { QUOTE_COLUMNS, type FeedQuote } from './useFeed'
+import { QUOTE_COLUMNS, useFeed, type FeedQuote } from './useFeed'
 import { useLikes } from './useLikes'
 import { useComments } from './useComments'
 import { useFollowRequests } from './useFollowRequests'
@@ -45,14 +45,20 @@ export function useProfile() {
   // ¿Esta persona me ha solicitado seguirme? (para el aviso de aceptar/rechazar).
   const hasIncomingRequest = ref(false)
   const incomingBusy = ref(false)
+  // Bloqueo (en ambos sentidos).
+  const iBlockedThem = ref(false)
+  const blockedByThem = ref(false)
+  const blockBusy = ref(false)
   // Paginación de las citas del perfil (cursor por fecha).
   const quotesHasMore = ref(false)
   const quotesLoadingMore = ref(false)
 
-  // ¿Puedo ver el contenido/listas de este perfil? (propio, público o seguidor aceptado).
+  // ¿Puedo ver el contenido/listas de este perfil? (propio, público o seguidor
+  // aceptado; nunca si hay bloqueo en cualquier sentido).
   const canSeeContent = computed(() => {
     const p = profile.value
     if (!p) return false
+    if (iBlockedThem.value || blockedByThem.value) return false
     return isSelf.value || !p.is_private || followState.value === 'accepted'
   })
   const canSeeLists = canSeeContent
@@ -91,7 +97,8 @@ export function useProfile() {
     // Contadores (solo aceptados), citas (RLS las oculta si no puedo verlas), mi
     // estado de seguimiento (none/pending/accepted) y si ESTA persona me ha
     // solicitado seguirme, en paralelo.
-    const [followersRes, followingRes, quotesRes, myFollowRes, incomingRes] = await Promise.all([
+    const [followersRes, followingRes, quotesRes, myFollowRes, incomingRes, iBlockedRes, blockedByRes] =
+      await Promise.all([
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', prof.id).eq('status', 'accepted'),
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', prof.id).eq('status', 'accepted'),
       supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false }).limit(PAGE_SIZE),
@@ -100,6 +107,12 @@ export function useProfile() {
         : Promise.resolve({ data: null }),
       auth.user && auth.user.id !== prof.id
         ? supabase.from('follows').select('follower_id').eq('follower_id', prof.id).eq('following_id', auth.user.id).eq('status', 'pending').maybeSingle()
+        : Promise.resolve({ data: null }),
+      auth.user && auth.user.id !== prof.id
+        ? supabase.from('blocks').select('blocker_id').eq('blocker_id', auth.user.id).eq('blocked_id', prof.id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      auth.user && auth.user.id !== prof.id
+        ? supabase.from('blocks').select('blocker_id').eq('blocker_id', prof.id).eq('blocked_id', auth.user.id).maybeSingle()
         : Promise.resolve({ data: null }),
     ])
 
@@ -110,6 +123,8 @@ export function useProfile() {
     const myFollow = myFollowRes.data as { status?: string } | null
     followState.value = (myFollow?.status as FollowState) ?? 'none'
     hasIncomingRequest.value = incomingRes.data != null
+    iBlockedThem.value = iBlockedRes.data != null
+    blockedByThem.value = blockedByRes.data != null
 
     useComments().hydrateCounts(quotes.value)
     await useLikes().hydrate(quotes.value)
@@ -221,6 +236,42 @@ export function useProfile() {
     if (ok) hasIncomingRequest.value = false
   }
 
+  /** Bloquea a esta persona: se rompen follows (trigger) y deja de ver mi contenido. */
+  async function block() {
+    const auth = useAuthStore()
+    if (!auth.user || !profile.value || isSelf.value || blockBusy.value) return
+    blockBusy.value = true
+    const { error: err } = await supabase
+      .from('blocks')
+      .insert({ blocker_id: auth.user.id, blocked_id: profile.value.id })
+    blockBusy.value = false
+    if (!err) {
+      iBlockedThem.value = true
+      followState.value = 'none'
+      hasIncomingRequest.value = false
+      useFeed().removeAuthorQuotes(profile.value.id)
+      refreshCounts()
+    }
+  }
+
+  /** Desbloquea y recarga el perfil para volver a ver su estado real. */
+  async function unblock() {
+    const auth = useAuthStore()
+    if (!auth.user || !profile.value || blockBusy.value) return
+    blockBusy.value = true
+    const username = profile.value.username
+    const { error: err } = await supabase
+      .from('blocks')
+      .delete()
+      .eq('blocker_id', auth.user.id)
+      .eq('blocked_id', profile.value.id)
+    blockBusy.value = false
+    if (!err) {
+      iBlockedThem.value = false
+      if (username) load(username)
+    }
+  }
+
   return {
     profile,
     quotes,
@@ -236,6 +287,9 @@ export function useProfile() {
     followBusy,
     hasIncomingRequest,
     incomingBusy,
+    iBlockedThem,
+    blockedByThem,
+    blockBusy,
     quotesHasMore,
     quotesLoadingMore,
     load,
@@ -244,5 +298,7 @@ export function useProfile() {
     refreshCounts,
     acceptIncomingRequest,
     rejectIncomingRequest,
+    block,
+    unblock,
   }
 }

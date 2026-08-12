@@ -164,6 +164,13 @@ function removeQuoteById(quoteId: string) {
   quotes.value = quotes.value.filter((q) => q.id !== quoteId)
 }
 
+/** Al bloquear a alguien: quito sus citas del feed y de la comunidad al instante. */
+function removeAuthorQuotes(userId: string) {
+  quotes.value = quotes.value.filter((q) => q.user_id !== userId)
+  communityQuotes.value = communityQuotes.value.filter((q) => q.user_id !== userId)
+  followedAuthors.value = new Set([...followedAuthors.value].filter((id) => id !== userId))
+}
+
 /**
  * Acabo de seguir a alguien (p. ej. desde "A quién seguir"): sus citas dejan de
  * ser "comunidad", pasan a entrar en mi feed vía Realtime, y traigo aquí y ahora
@@ -212,6 +219,7 @@ export function useFeed() {
     addQuoteById,
     refreshQuoteById,
     removeQuoteById,
+    removeAuthorQuotes,
     onFollowedAuthor,
   }
 }

@@ -27,13 +27,19 @@ async function load() {
 
   loading.value = true
 
-  // A quién sigo ya, para no sugerírmelo.
-  const { data: follows } = await supabase
-    .from('follows')
-    .select('following_id')
-    .eq('follower_id', auth.user.id)
+  // A quién sigo ya y bloqueos (en ambos sentidos), para no sugerírmelos.
+  const [{ data: follows }, { data: blocks }] = await Promise.all([
+    supabase.from('follows').select('following_id').eq('follower_id', auth.user.id),
+    supabase
+      .from('blocks')
+      .select('blocker_id, blocked_id')
+      .or(`blocker_id.eq.${auth.user.id},blocked_id.eq.${auth.user.id}`),
+  ])
 
   const exclude = new Set<string>([auth.user.id, ...(follows ?? []).map((f) => f.following_id)])
+  for (const b of blocks ?? []) {
+    exclude.add(b.blocker_id === auth.user.id ? b.blocked_id : b.blocker_id)
+  }
   const excludeList = `(${[...exclude].join(',')})`
 
   const { data } = await supabase
