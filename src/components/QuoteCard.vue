@@ -4,6 +4,7 @@ import type { FeedQuote } from '../composables/useFeed'
 import { useLikes } from '../composables/useLikes'
 import { useComments, type Comment } from '../composables/useComments'
 import { useQuotes } from '../composables/useQuotes'
+import { useReport } from '../composables/useReport'
 import { useAuthStore } from '../stores/auth'
 import { timeAgo } from '../lib/format'
 
@@ -112,6 +113,26 @@ async function submitComment() {
 }
 
 const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'Lector'
+
+// --- Reportar ---
+const { report } = useReport()
+function onReportQuote() {
+  menuOpen.value = false
+  report({
+    type: 'quote',
+    reportedId: props.quote.user_id,
+    targetId: props.quote.id,
+    label: props.quote.content.slice(0, 60),
+  })
+}
+function onReportComment(c: Comment) {
+  report({
+    type: 'comment',
+    reportedId: c.user_id,
+    targetId: c.id,
+    label: c.content.slice(0, 60),
+  })
+}
 </script>
 
 <template>
@@ -208,6 +229,34 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Menú de cita ajena: reportar -->
+      <div v-else-if="handle" ref="menuRoot" class="relative flex-none" @click.stop>
+        <button
+          class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+          aria-label="Opciones de la cita"
+          @click="menuOpen = !menuOpen"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" />
+          </svg>
+        </button>
+        <div
+          v-if="menuOpen"
+          class="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-800"
+        >
+          <button
+            class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-700"
+            @click="onReportQuote"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+              <path d="M4 22v-7" />
+            </svg>
+            Reportar cita
+          </button>
         </div>
       </div>
     </header>
@@ -371,6 +420,13 @@ const cName = (c: Comment) => c.author?.display_name || c.author?.username || 'L
                 @click="comments.remove(quote.id, c.id)"
               >
                 Eliminar
+              </button>
+              <button
+                v-else
+                class="hover:text-stone-600 dark:hover:text-stone-300"
+                @click="onReportComment(c)"
+              >
+                Reportar
               </button>
             </div>
           </div>

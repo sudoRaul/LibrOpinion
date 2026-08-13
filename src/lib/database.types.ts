@@ -263,6 +263,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_banned: boolean
           is_private: boolean
           updated_at: string
           username: string | null
@@ -273,6 +274,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          is_banned?: boolean
           is_private?: boolean
           updated_at?: string
           username?: string | null
@@ -283,6 +285,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_banned?: boolean
           is_private?: boolean
           updated_at?: string
           username?: string | null
@@ -328,6 +331,57 @@ export type Database = {
           {
             foreignKeyName: "quotes_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status: string
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status?: string
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_reported_id_fkey"
+            columns: ["reported_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

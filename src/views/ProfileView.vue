@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProfile, clearActiveProfile } from '../composables/useProfile'
+import { useReport } from '../composables/useReport'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
@@ -56,6 +57,13 @@ onBeforeUnmount(() => document.removeEventListener('click', onMenuDocClick))
 async function onBlock() {
   menuOpen.value = false
   await block()
+}
+
+const { report } = useReport()
+function onReport() {
+  menuOpen.value = false
+  if (!profile.value) return
+  report({ type: 'user', reportedId: profile.value.id, label: '@' + profile.value.username })
 }
 
 // Scroll infinito de las citas del perfil.
@@ -310,6 +318,16 @@ function onProfileUpdated(newUsername: string) {
                   v-if="menuOpen"
                   class="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-800"
                 >
+                  <button
+                    class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-stone-700 hover:bg-stone-50 dark:text-stone-200 dark:hover:bg-stone-700"
+                    @click="onReport"
+                  >
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                      <path d="M4 22v-7" />
+                    </svg>
+                    Reportar
+                  </button>
                   <button
                     class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
                     @click="onBlock"
