@@ -110,6 +110,16 @@ async function logout() {
               {{ auth.profile.username.charAt(0).toUpperCase() }}
             </span>
           </RouterLink>
+          <RouterLink
+            v-if="auth.profile?.is_admin"
+            to="/admin"
+            title="Panel de moderación"
+            class="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 4 6v5c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6z" />
+            </svg>
+          </RouterLink>
           <NotificationsBell />
           <ThemeToggle />
           <button

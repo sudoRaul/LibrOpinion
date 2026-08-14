@@ -36,6 +36,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('../views/AdminView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
@@ -68,6 +74,11 @@ router.beforeEach((to) => {
 
   // Con sesión intentando ver login/signup → al feed.
   if (to.meta.guestOnly && auth.isAuthenticated) {
+    return { name: 'feed' }
+  }
+
+  // Panel de admin: solo para admins. (La seguridad real está en la BD; esto es UX.)
+  if (to.meta.requiresAdmin && auth.profile?.is_admin !== true) {
     return { name: 'feed' }
   }
 

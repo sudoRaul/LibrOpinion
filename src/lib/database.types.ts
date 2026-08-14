@@ -263,6 +263,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_admin: boolean
           is_banned: boolean
           is_private: boolean
           updated_at: string
@@ -274,6 +275,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          is_admin?: boolean
           is_banned?: boolean
           is_private?: boolean
           updated_at?: string
@@ -285,6 +287,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean
           is_banned?: boolean
           is_private?: boolean
           updated_at?: string
@@ -393,7 +396,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_review_report: {
+        Args: {
+          p_report_id: string
+          p_status: string
+        }
+        Returns: undefined
+      }
+      admin_set_ban: {
+        Args: {
+          p_banned: boolean
+          p_target: string
+        }
+        Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

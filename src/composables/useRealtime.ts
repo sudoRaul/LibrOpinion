@@ -112,6 +112,20 @@ function start() {
         if (row.following_id) reloadProfileIfViewing(row.following_id)
       },
     )
+    // Mi propio perfil cambió: lo más importante, si me banean en vivo refresco
+    // el perfil para que la app muestre "Cuenta suspendida" sin recargar.
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${myId}`,
+      },
+      () => {
+        void auth.fetchProfile()
+      },
+    )
     // Notificación mía borrada (unfollow/unlike): la quito de la campana en vivo.
     .on(
       'postgres_changes',
