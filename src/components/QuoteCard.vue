@@ -5,6 +5,7 @@ import { useLikes } from '../composables/useLikes'
 import { useComments, type Comment } from '../composables/useComments'
 import { useQuotes } from '../composables/useQuotes'
 import { useReport } from '../composables/useReport'
+import { useShareImage } from '../composables/useShareImage'
 import { useAuthStore } from '../stores/auth'
 import { timeAgo } from '../lib/format'
 
@@ -71,6 +72,19 @@ function onToggleLike() {
     likeAnimating.value = true
     setTimeout(() => (likeAnimating.value = false), 350)
   }
+}
+
+// --- Compartir como imagen ---
+const { shareQuote } = useShareImage()
+const sharing = ref(false)
+const shareError = ref<string | null>(null)
+async function onShare() {
+  if (sharing.value) return
+  shareError.value = null
+  sharing.value = true
+  const { ok, error } = await shareQuote(props.quote)
+  sharing.value = false
+  if (!ok) shareError.value = error ?? 'No se pudo compartir.'
 }
 
 const displayName = computed(
@@ -341,7 +355,26 @@ function onReportComment(c: Comment) {
           {{ comments.getCount(quote.id) || 'Comentar' }}
         </span>
       </button>
+
+      <button
+        class="ml-auto inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-emerald-700 disabled:opacity-60 dark:text-stone-400 dark:hover:text-emerald-400"
+        :disabled="sharing"
+        :aria-label="`Compartir la cita como imagen`"
+        title="Compartir como imagen"
+        @click="onShare"
+      >
+        <svg v-if="!sharing" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+          <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+        </svg>
+        <svg v-else class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 1 1-6.2-8.5" stroke-linecap="round" />
+        </svg>
+        <span class="hidden sm:inline">Compartir</span>
+      </button>
     </div>
+
+    <p v-if="shareError" class="mt-1 px-2 text-xs text-red-600 dark:text-red-400">{{ shareError }}</p>
 
     <!-- Panel de comentarios -->
     <section v-if="showComments" class="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">

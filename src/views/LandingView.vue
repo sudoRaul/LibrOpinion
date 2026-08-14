@@ -85,8 +85,8 @@ const features = [
         </svg>
         <span class="font-display text-xl font-semibold tracking-tight text-stone-900 dark:text-white">librOpinion</span>
       </div>
+      <ThemeToggle />
       <nav class="flex items-center gap-2">
-        <ThemeToggle />
         <RouterLink
           to="/login"
           class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
