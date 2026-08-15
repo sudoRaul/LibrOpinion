@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useRealtime } from './composables/useRealtime'
 import { useNotifications } from './composables/useNotifications'
@@ -7,6 +8,7 @@ import { useFollowRequests } from './composables/useFollowRequests'
 import ReportModal from './components/ReportModal.vue'
 
 const auth = useAuthStore()
+const router = useRouter()
 const realtime = useRealtime()
 const notifications = useNotifications()
 const followRequests = useFollowRequests()
@@ -16,6 +18,7 @@ const isBanned = computed(() => auth.profile?.is_banned === true)
 
 async function logout() {
   await auth.signOut()
+  router.push('/login')
 }
 
 // Escucha en vivo y notificaciones mientras haya sesión.
