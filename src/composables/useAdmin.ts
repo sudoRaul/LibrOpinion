@@ -43,11 +43,16 @@ function setFilter(f: ReportFilter) {
   void load()
 }
 
-/** Banea o desbanea al usuario reportado (RPC controlada por is_admin()). */
-async function setBan(targetId: string, banned: boolean): Promise<{ error: string | null }> {
+/** Banea (con motivo) o desbanea al usuario reportado (RPC controlada por is_admin()). */
+async function setBan(
+  targetId: string,
+  banned: boolean,
+  reason?: string,
+): Promise<{ error: string | null }> {
   const { error: err } = await supabase.rpc('admin_set_ban', {
     p_target: targetId,
     p_banned: banned,
+    ...(banned && reason ? { p_reason: reason } : {}),
   })
   if (err) return { error: 'No se pudo actualizar el baneo.' }
   // Refleja el nuevo estado en todos los reportes de ese usuario.

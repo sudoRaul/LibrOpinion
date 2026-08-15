@@ -24,10 +24,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      // Permalink público: accesible sin sesión (RLS solo deja ver citas de
+      // cuentas públicas). Los invitados ven una versión de solo lectura.
       path: '/q/:id',
       name: 'quote',
       component: () => import('../views/QuoteView.vue'),
-      meta: { requiresAuth: true },
+      meta: { public: true },
     },
     {
       path: '/solicitudes',

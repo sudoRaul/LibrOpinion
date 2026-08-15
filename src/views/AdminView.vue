@@ -8,6 +8,12 @@ const { reports, loading, error, filter, load, setFilter, setBan, reviewReport }
 
 const busyId = ref<string | null>(null)
 
+// Modal de baneo: exige escribir el motivo (se envía por correo al usuario).
+const banTarget = ref<AdminReport | null>(null)
+const banReason = ref('')
+const banBusy = ref(false)
+const banErr = ref<string | null>(null)
+
 onMounted(load)
 
 const TYPE_LABEL: Record<string, string> = {
@@ -35,11 +41,41 @@ function initial(r: AdminReport['reported']): string {
   return (r?.username ?? r?.display_name ?? '?').charAt(0).toUpperCase()
 }
 
-async function onToggleBan(r: AdminReport) {
+function onToggleBan(r: AdminReport) {
+  if (!r.reported) return
+  if (r.reported.is_banned) {
+    void unban(r) // desbanear: directo, sin motivo
+  } else {
+    banTarget.value = r // banear: pide motivo
+    banReason.value = ''
+    banErr.value = null
+  }
+}
+
+async function unban(r: AdminReport) {
   if (!r.reported) return
   busyId.value = r.id
-  await setBan(r.reported.id, !r.reported.is_banned)
+  await setBan(r.reported.id, false)
   busyId.value = null
+}
+
+async function confirmBan() {
+  const r = banTarget.value
+  if (!r?.reported) return
+  const reason = banReason.value.trim()
+  if (!reason) {
+    banErr.value = 'Escribe el motivo del baneo.'
+    return
+  }
+  banBusy.value = true
+  banErr.value = null
+  const { error } = await setBan(r.reported.id, true, reason)
+  banBusy.value = false
+  if (error) {
+    banErr.value = error
+    return
+  }
+  banTarget.value = null
 }
 
 async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
@@ -241,5 +277,54 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
         </li>
       </ul>
     </main>
+
+    <!-- Modal de baneo: motivo obligatorio (se envía por correo al usuario) -->
+    <div
+      v-if="banTarget"
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-900/50 p-4 backdrop-blur-sm sm:items-center"
+      @click.self="banTarget = null"
+    >
+      <div class="my-8 w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="font-display text-xl font-semibold text-stone-900 dark:text-white">
+          Banear a
+          <span class="text-red-600 dark:text-red-400">@{{ banTarget.reported?.username }}</span>
+        </h2>
+        <p class="mt-1.5 text-sm text-stone-500 dark:text-stone-400">
+          Su contenido se ocultará y recibirá un correo con el motivo. Escríbelo con claridad.
+        </p>
+
+        <label for="ban-reason" class="mt-4 mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
+          Motivo del baneo
+        </label>
+        <textarea
+          id="ban-reason"
+          v-model="banReason"
+          rows="4"
+          maxlength="1000"
+          placeholder="Ej.: Insultos reiterados a otros usuarios pese a los avisos."
+          class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+        ></textarea>
+
+        <p v-if="banErr" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ banErr }}</p>
+
+        <div class="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            class="rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
+            @click="banTarget = null"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            :disabled="banBusy"
+            class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="confirmBan"
+          >
+            {{ banBusy ? 'Baneando…' : 'Banear y avisar' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

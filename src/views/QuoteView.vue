@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useQuote } from '../composables/useQuote'
+import { useAuthStore } from '../stores/auth'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
 import QuoteCard from '../components/QuoteCard.vue'
@@ -10,7 +11,11 @@ import type { FeedQuote } from '../composables/useFeed'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const { quote, loading, notFound, error, load } = useQuote()
+
+// Visitante sin sesión (permalink público): vista de solo lectura + CTA.
+const isGuest = computed(() => !auth.isAuthenticated)
 
 const editingQuote = ref<FeedQuote | null>(null)
 const copied = ref(false)
@@ -47,7 +52,16 @@ async function copyLink() {
     <!-- Cabecera -->
     <header class="sticky top-0 z-30 border-b border-stone-200 bg-stone-50/80 backdrop-blur dark:border-stone-800 dark:bg-stone-950/80">
       <div class="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
+        <!-- Invitado: marca que enlaza a la landing. Con sesión: volver. -->
+        <RouterLink v-if="isGuest" to="/" class="flex items-center gap-2">
+          <svg class="h-6 w-6 text-emerald-700 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+            <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
+          </svg>
+          <span class="font-display text-lg font-semibold text-stone-900 dark:text-white">librOpinion</span>
+        </RouterLink>
         <button
+          v-else
           class="flex items-center gap-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
           @click="router.back()"
         >
@@ -56,9 +70,27 @@ async function copyLink() {
           </svg>
           Volver
         </button>
+
         <div class="flex items-center gap-2">
-          <NotificationsBell />
-          <ThemeToggle />
+          <template v-if="isGuest">
+            <ThemeToggle />
+            <RouterLink
+              to="/login"
+              class="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
+            >
+              Iniciar sesión
+            </RouterLink>
+            <RouterLink
+              to="/signup"
+              class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            >
+              Crear cuenta
+            </RouterLink>
+          </template>
+          <template v-else>
+            <NotificationsBell />
+            <ThemeToggle />
+          </template>
         </div>
       </div>
     </header>
@@ -73,8 +105,20 @@ async function copyLink() {
         class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
       >
         <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">Cita no encontrada</p>
-        <p class="mt-2 text-stone-500 dark:text-stone-400">Puede que se haya eliminado o que el enlace no sea válido.</p>
+        <p class="mt-2 text-stone-500 dark:text-stone-400">
+          {{ isGuest
+            ? 'Puede que sea de una cuenta privada, que se haya eliminado o que el enlace no sea válido.'
+            : 'Puede que se haya eliminado o que el enlace no sea válido.' }}
+        </p>
         <button
+          v-if="isGuest"
+          class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+          @click="router.push('/login')"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          v-else
           class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="router.push('/app')"
         >
@@ -119,6 +163,34 @@ async function copyLink() {
           @close="editingQuote = null"
           @updated="onQuoteUpdated"
         />
+
+        <!-- CTA para invitados: únete a librOpinion -->
+        <div
+          v-if="isGuest"
+          class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-6 text-center dark:border-emerald-900/50 dark:bg-emerald-950/30"
+        >
+          <p class="font-display text-lg font-semibold text-stone-900 dark:text-white">
+            Guarda las frases que te marcan
+          </p>
+          <p class="mx-auto mt-1.5 max-w-md text-sm text-stone-600 dark:text-stone-400">
+            librOpinion es una red social para lectores: apunta las citas de tus libros,
+            añade tu opinión y descubre lo que subrayan las personas a las que sigues.
+          </p>
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
+            <RouterLink
+              to="/signup"
+              class="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            >
+              Crear cuenta gratis
+            </RouterLink>
+            <RouterLink
+              to="/login"
+              class="rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-white dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+            >
+              Iniciar sesión
+            </RouterLink>
+          </div>
+        </div>
       </template>
     </main>
   </div>

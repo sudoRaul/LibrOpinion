@@ -1,0 +1,12 @@
+# Configuración de despliegue en Netlify.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: cualquier ruta cae en index.html (Vue Router se encarga del enrutado).
+# La Edge Function `og` intercepta /q/:id ANTES de este redirect para inyectar
+# las meta-tags Open Graph (se auto-descubre en netlify/edge-functions/).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

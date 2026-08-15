@@ -26,6 +26,8 @@ const { deleteQuote } = useQuotes()
 
 // Solo el dueño ve el menú de editar/borrar (la garantía real es RLS).
 const isOwn = computed(() => props.quote.user_id === auth.user?.id)
+// Invitado (permalink público sin sesión): vista de solo lectura.
+const isGuest = computed(() => !auth.user)
 
 const menuOpen = ref(false)
 const confirmingDelete = ref(false)
@@ -246,8 +248,8 @@ function onReportComment(c: Comment) {
         </div>
       </div>
 
-      <!-- Menú de cita ajena: reportar -->
-      <div v-else-if="handle" ref="menuRoot" class="relative flex-none" @click.stop>
+      <!-- Menú de cita ajena: reportar (no para invitados) -->
+      <div v-else-if="handle && !isGuest" ref="menuRoot" class="relative flex-none" @click.stop>
         <button
           class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
           aria-label="Opciones de la cita"
@@ -323,6 +325,7 @@ function onReportComment(c: Comment) {
     <!-- Acciones -->
     <div class="mt-3 flex items-center gap-1 border-t border-stone-100 pt-3 dark:border-stone-800">
       <button
+        v-if="!isGuest"
         class="group inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
         :class="like.liked ? 'text-rose-600 dark:text-rose-400' : 'text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400'"
         :aria-pressed="like.liked"
@@ -344,6 +347,7 @@ function onReportComment(c: Comment) {
       </button>
 
       <button
+        v-if="!isGuest"
         class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-emerald-700 dark:text-stone-400 dark:hover:text-emerald-400"
         :class="showComments ? 'text-emerald-700 dark:text-emerald-400' : ''"
         @click="toggleComments"
