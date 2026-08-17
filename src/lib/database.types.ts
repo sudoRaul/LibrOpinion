@@ -268,6 +268,7 @@ export type Database = {
           is_admin: boolean
           is_banned: boolean
           is_private: boolean
+          locale: string | null
           updated_at: string
           username: string | null
         }
@@ -282,6 +283,7 @@ export type Database = {
           is_admin?: boolean
           is_banned?: boolean
           is_private?: boolean
+          locale?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -296,6 +298,7 @@ export type Database = {
           is_admin?: boolean
           is_banned?: boolean
           is_private?: boolean
+          locale?: string | null
           updated_at?: string
           username?: string | null
         }

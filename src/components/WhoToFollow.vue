@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSuggestions, type Suggestion } from '../composables/useSuggestions'
 
+const { t } = useI18n()
 const { suggestions, follow, isBusy } = useSuggestions()
 
 function displayName(p: Suggestion): string {
-  return p.display_name || p.username || 'Lector'
+  return p.display_name || p.username || t('profile.readerFallback')
 }
 function initials(p: Suggestion): string {
   return displayName(p)
@@ -26,9 +28,9 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
   >
     <div class="mb-3 flex items-baseline justify-between px-1">
       <h2 class="font-display text-base font-semibold text-stone-900 dark:text-white">
-        A quién seguir
+        {{ t('whoToFollow.title') }}
       </h2>
-      <span class="text-xs text-stone-400 dark:text-stone-500">Desliza →</span>
+      <span class="text-xs text-stone-400 dark:text-stone-500">{{ t('whoToFollow.swipe') }}</span>
     </div>
 
     <!-- Slider horizontal con scroll-snap; sin flechas, deslizable con el dedo. -->
@@ -67,7 +69,7 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
           class="mt-3 w-full rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="follow(p)"
         >
-          {{ p.is_private ? 'Solicitar' : 'Seguir' }}
+          {{ p.is_private ? t('whoToFollow.request') : t('whoToFollow.follow') }}
         </button>
       </article>
     </div>

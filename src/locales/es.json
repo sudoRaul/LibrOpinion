@@ -1,0 +1,377 @@
+{
+  "auth": {
+    "google": "Continuar con Google",
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Entra para ver las citas de quienes sigues.",
+      "submit": "Iniciar sesión",
+      "submitting": "Entrando…",
+      "noAccount": "¿No tienes cuenta?",
+      "createAccount": "Crear una cuenta"
+    },
+    "signup": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Empieza a guardar las frases que te marcan.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta…",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "login": "Iniciar sesión",
+      "confirmBody": "Casi listo. Si {email} es una cuenta nueva, te hemos enviado un enlace para confirmarla. Si ya tenías cuenta, revisa tu correo o inicia sesión.",
+      "goLogin": "Ir a iniciar sesión"
+    },
+    "onboarding": {
+      "title": "Elige tu nombre de usuario",
+      "subtitle": "Así te encontrarán otros lectores. Podrás cambiarlo más adelante.",
+      "usernameLabel": "Nombre de usuario",
+      "usernamePlaceholder": "miguel_lector",
+      "usernameHint": "Entre 3 y 30 caracteres: letras, números y guion bajo.",
+      "submit": "Continuar",
+      "submitting": "Guardando…",
+      "signOut": "Cerrar sesión"
+    },
+    "fields": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu{'@'}correo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Mínimo 6 caracteres."
+    },
+    "err": {
+      "invalidCredentials": "Email o contraseña incorrectos.",
+      "alreadyRegistered": "Ese email ya está registrado.",
+      "passwordShort": "La contraseña debe tener al menos 6 caracteres.",
+      "invalidEmail": "El email no es válido.",
+      "rateLimit": "Demasiados intentos. Prueba de nuevo en un rato.",
+      "usernameTaken": "Ese nombre de usuario ya está en uso.",
+      "usernameFormat": "Usa entre 3 y 30 caracteres: solo letras, números y guion bajo (_).",
+      "noSession": "No hay ninguna sesión activa."
+    }
+  },
+  "landing": {
+    "nav": {
+      "login": "Iniciar sesión",
+      "signup": "Crear cuenta"
+    },
+    "badge": "Una red social para lectores",
+    "hero": {
+      "titleBefore": "Las frases que te",
+      "titleHighlight": "marcan",
+      "titleAfter": "merecen un lugar.",
+      "subtitle": "Guarda las citas de los libros que lees, añade tu página y tu opinión, y descubre lo que subrayan las personas a las que sigues.",
+      "ctaPrimary": "Empieza a citar gratis",
+      "ctaSecondary": "Ya tengo cuenta"
+    },
+    "heroQuotes": [
+      { "text": "Era el mejor de los tiempos, era el peor de los tiempos.", "book": "Historia de dos ciudades", "author": "Charles Dickens" },
+      { "text": "No hay amigo tan leal como un libro.", "book": "Sobre la lectura", "author": "Ernest Hemingway" },
+      { "text": "Quien lee mucho y anda mucho, ve mucho y sabe mucho.", "book": "Don Quijote de la Mancha", "author": "Miguel de Cervantes" }
+    ],
+    "ribbon": [
+      "Un lector vive mil vidas antes de morir.",
+      "Los libros son espejos: solo ves en ellos lo que ya llevas dentro.",
+      "Hasta el infinito y más allá de la última página.",
+      "Leer es soñar con los ojos abiertos.",
+      "Cada libro leído es un peldaño más.",
+      "La lectura es a la mente lo que el ejercicio al cuerpo."
+    ],
+    "features": {
+      "heading": "Tu biblioteca de frases favoritas",
+      "subheading": "Todo lo que subrayas, en un mismo lugar, y compartido con quien quieras.",
+      "items": [
+        { "title": "Cita y comenta", "body": "Apunta la frase que te marcó, su página y por qué te llegó. Tu biblioteca de subrayados, ordenada." },
+        { "title": "Sigue a lectores", "body": "Tu feed se llena con las citas de quienes sigues. Descubre a través de los ojos de otros." },
+        { "title": "Encuentra tu próxima lectura", "body": "Cada cita es una puerta a un libro nuevo. Deja que las frases te guíen al siguiente." }
+      ]
+    },
+    "finalCta": {
+      "heading": "Empieza tu colección de citas",
+      "subtitle": "Únete gratis y guarda la primera frase que te quite el aliento.",
+      "button": "Crear mi cuenta"
+    },
+    "footer": "Hecho para quienes subrayan."
+  },
+  "feed": {
+    "myProfile": "Mi perfil",
+    "adminPanel": "Panel de moderación",
+    "logout": "Salir",
+    "composerTrigger": "Comparte una cita…",
+    "loadMore": "Cargar más",
+    "error": "No se pudo cargar el feed.",
+    "endSubtitle": "Aquí no se acaba: sigue explorando lectores y citas de la comunidad.",
+    "discovery": {
+      "titleFollowing": "Descubre la comunidad",
+      "titleNoFollows": "Aún no sigues a nadie",
+      "subtitleFollowing": "Citas recientes de otros lectores que quizá quieras seguir.",
+      "subtitleNoFollows": "Mientras tanto, echa un vistazo a lo que comparte la comunidad."
+    },
+    "empty": {
+      "title": "Tu feed está en blanco",
+      "body": "Publica tu primera cita o sigue a otros lectores para llenar esta página.",
+      "cta": "Publicar una cita"
+    }
+  },
+  "quote": {
+    "readerFallback": "Lector",
+    "shareError": "No se pudo compartir la imagen.",
+    "menu": {
+      "options": "Opciones de la cita",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Eliminar esta cita?",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando…",
+      "reportQuote": "Reportar cita",
+      "deleteError": "No se pudo eliminar la cita."
+    },
+    "actions": {
+      "like": "Me gusta",
+      "comment": "Comentar",
+      "share": "Compartir",
+      "shareAria": "Compartir la cita como imagen",
+      "shareTitle": "Compartir como imagen"
+    },
+    "comments": {
+      "placeholder": "Añade un comentario…",
+      "send": "Enviar",
+      "delete": "Eliminar",
+      "report": "Reportar",
+      "you": "Tú",
+      "error": "No se pudo publicar el comentario."
+    }
+  },
+  "endOfList": {
+    "title": "Colorín colorado, las citas se han acabado",
+    "subtitle": "Has llegado al final. Vuelve pronto: siempre hay una frase nueva esperando."
+  },
+  "common": {
+    "or": "o",
+    "language": "Idioma",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "searching": "Buscando…",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando…",
+    "uploading": "Subiendo…",
+    "optional": "(opcional)",
+    "optionalShort": "(opc.)"
+  },
+  "quoteForm": {
+    "contentLabel": "La cita",
+    "contentPlaceholder": "“La frase que te marcó…”",
+    "pageLabel": "Página",
+    "noteLabel": "Tu nota",
+    "notePlaceholder": "Por qué te llegó, qué te recordó…",
+    "errWrite": "Escribe la cita.",
+    "errTooLong": "La cita no puede superar {max} caracteres.",
+    "errPageInvalid": "La página debe ser un número entero positivo."
+  },
+  "compose": {
+    "title": "Nueva cita",
+    "aria": "Publicar una cita",
+    "submit": "Publicar",
+    "submitting": "Publicando…",
+    "errChooseBook": "Elige o crea un libro.",
+    "errPublishFailed": "No se pudo publicar la cita."
+  },
+  "editQuote": {
+    "title": "Editar cita",
+    "errSaveFailed": "No se pudo guardar."
+  },
+  "bookSelect": {
+    "label": "Libro",
+    "change": "Cambiar",
+    "searchPlaceholder": "Busca por título o autor…",
+    "searching": "Buscando…",
+    "noMatches": "No hay coincidencias.",
+    "addNew": "+ Añadir un libro nuevo",
+    "titlePlaceholder": "Título",
+    "authorPlaceholder": "Autor",
+    "coverAlt": "Portada",
+    "coverUrlPlaceholder": "URL de la portada (opcional)",
+    "uploadCover": "Subir portada",
+    "addBook": "Añadir libro",
+    "adding": "Añadiendo…",
+    "errCoverUpload": "No se pudo subir la portada.",
+    "errRequired": "El título y el autor son obligatorios.",
+    "errCreateFailed": "No se pudo crear el libro."
+  },
+  "editProfile": {
+    "title": "Editar perfil",
+    "avatarPreviewAlt": "Vista previa del avatar",
+    "uploadImage": "Subir imagen",
+    "avatarHint": "JPG, PNG… máx. 2 MB.",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Tu nombre visible",
+    "usernameLabel": "Nombre de usuario",
+    "usernameHint": "Entre 3 y 30 caracteres. Cambiarlo modifica la URL de tu perfil.",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Cuéntale al mundo qué lees…",
+    "avatarUrlLabel": "URL del avatar",
+    "avatarUrlPlaceholder": "https://…",
+    "avatarUrlHint": "La subida de imágenes llegará con Storage. De momento, una URL.",
+    "privateTitle": "Cuenta privada",
+    "privateDesc": "Solo tus seguidores aceptados verán tus citas. Los nuevos tendrán que solicitar seguirte.",
+    "errUsernameFormat": "El usuario debe tener 3-30 caracteres: letras, números y guion bajo.",
+    "errAvatarUpload": "No se pudo subir la imagen."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todas como leídas",
+    "empty": "No tienes notificaciones todavía.",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "someone": "Alguien",
+    "requestsCount": "{count} solicitud de seguimiento | {count} solicitudes de seguimiento",
+    "verb": {
+      "follow": "empezó a seguirte",
+      "like": "le dio me gusta a tu cita",
+      "comment": "comentó tu cita",
+      "follow_request": "quiere seguirte",
+      "follow_accepted": "aceptó tu solicitud"
+    }
+  },
+  "profile": {
+    "feed": "Feed",
+    "readerFallback": "Lector",
+    "notFoundTitle": "Perfil no encontrado",
+    "notFoundBody": "No existe ningún usuario con ese nombre.",
+    "backToFeed": "Volver al feed",
+    "error": "No se pudo cargar el perfil.",
+    "unavailableTitle": "Perfil no disponible",
+    "unavailableBody": "No puedes ver este perfil.",
+    "privateAlt": "Cuenta privada",
+    "unblock": "Desbloquear",
+    "following": "Siguiendo",
+    "unfollow": "Dejar de seguir",
+    "requested": "Solicitado",
+    "cancel": "Cancelar",
+    "requestFollow": "Solicitar seguir",
+    "follow": "Seguir",
+    "moreOptions": "Más opciones",
+    "report": "Reportar",
+    "block": "Bloquear",
+    "editProfile": "Editar perfil",
+    "followersLabel": "seguidores",
+    "followingLabel": "siguiendo",
+    "quotesHeading": "Citas",
+    "blockedTitle": "Has bloqueado a @{username}",
+    "blockedBody": "No veis vuestro contenido mutuamente. Desbloquea para volver a interactuar.",
+    "privateTitle": "Esta cuenta es privada",
+    "privatePending": "Tu solicitud está pendiente de aprobación. Cuando te acepte, verás sus citas.",
+    "privateRequest": "Solicita seguir a @{username} para ver sus citas.",
+    "emptySelf": "Aún no has publicado ninguna cita.",
+    "emptyOther": "Todavía no ha publicado citas.",
+    "endSelf": "Has llegado al final de tus citas.",
+    "endOther": "No hay más citas de este lector, por ahora."
+  },
+  "quoteView": {
+    "heading": "Cita",
+    "copyLink": "Copiar enlace",
+    "copied": "¡Enlace copiado!",
+    "notFoundTitle": "Cita no encontrada",
+    "notFoundGuest": "Puede que sea de una cuenta privada, que se haya eliminado o que el enlace no sea válido.",
+    "notFoundUser": "Puede que se haya eliminado o que el enlace no sea válido.",
+    "login": "Iniciar sesión",
+    "goFeed": "Ir al feed",
+    "error": "No se pudo cargar la cita.",
+    "ctaTitle": "Guarda las frases que te marcan",
+    "ctaBody": "librOpinion es una red social para lectores: apunta las citas de tus libros, añade tu opinión y descubre lo que subrayan las personas a las que sigues.",
+    "ctaSignup": "Crear cuenta gratis",
+    "ctaLogin": "Iniciar sesión"
+  },
+  "requests": {
+    "title": "Solicitudes de seguimiento",
+    "emptyTitle": "No tienes solicitudes pendientes",
+    "emptyBody": "Cuando alguien pida seguirte, aparecerá aquí."
+  },
+  "search": {
+    "placeholder": "Buscar lectores…",
+    "noResults": "No hay lectores con ese nombre."
+  },
+  "whoToFollow": {
+    "title": "A quién seguir",
+    "swipe": "Desliza →",
+    "request": "Solicitar",
+    "follow": "Seguir"
+  },
+  "followList": {
+    "followers": "Seguidores",
+    "following": "Siguiendo",
+    "emptyFollowers": "Todavía no tiene seguidores.",
+    "emptyFollowing": "Todavía no sigue a nadie.",
+    "error": "No se pudo cargar la lista.",
+    "follow": "Seguir",
+    "unfollow": "Dejar de seguir",
+    "followingState": "Siguiendo",
+    "you": "Tú"
+  },
+  "report": {
+    "title": "Reportar",
+    "sent": "Reporte enviado",
+    "targetUser": "este usuario",
+    "targetQuote": "esta cita",
+    "targetComment": "este comentario",
+    "intro": "Estás reportando {target}. Cuéntanos el motivo.",
+    "detailLabel": "Detalle",
+    "detailPlaceholder": "Añade cualquier contexto que ayude a revisarlo…",
+    "submit": "Enviar reporte",
+    "submitting": "Enviando…",
+    "successBody": "Gracias. Hemos recibido tu reporte y lo revisaremos.",
+    "errSend": "No se pudo enviar el reporte. Inténtalo de nuevo.",
+    "reasons": {
+      "harassment": "Insultos o acoso",
+      "spam": "Spam",
+      "inappropriate": "Contenido inapropiado",
+      "impersonation": "Suplantación de identidad",
+      "other": "Otro"
+    }
+  },
+  "admin": {
+    "filterPending": "Pendientes",
+    "filterAll": "Todos",
+    "loading": "Cargando reportes…",
+    "error": "No se pudieron cargar los reportes.",
+    "emptyPending": "No hay reportes pendientes. Todo en orden.",
+    "emptyAll": "No hay reportes.",
+    "type": {
+      "user": "Perfil",
+      "quote": "Cita",
+      "comment": "Comentario"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "reviewed": "Revisado",
+      "dismissed": "Descartado"
+    },
+    "reportedBy": "Reportado por",
+    "someone": "alguien",
+    "userDeleted": "Usuario eliminado",
+    "banned": "Baneado",
+    "viewQuote": "Ver cita →",
+    "viewProfile": "Ver perfil →",
+    "banUser": "Banear usuario",
+    "unban": "Quitar baneo",
+    "markReviewed": "Marcar revisado",
+    "dismiss": "Descartar",
+    "banTitle": "Banear a",
+    "banDesc": "Su contenido se ocultará y recibirá un correo con el motivo. Escríbelo con claridad.",
+    "reasonLabel": "Motivo del baneo",
+    "reasonPlaceholder": "Ej.: Insultos reiterados a otros usuarios pese a los avisos.",
+    "errReason": "Escribe el motivo del baneo.",
+    "banConfirm": "Banear y avisar",
+    "banConfirming": "Baneando…"
+  },
+  "suspended": {
+    "title": "Cuenta suspendida",
+    "body": "Tu cuenta ha sido suspendida por incumplir las normas de la comunidad. Si crees que es un error, ponte en contacto con nosotros.",
+    "reason": "Motivo:",
+    "logout": "Cerrar sesión"
+  },
+  "theme": {
+    "toLight": "Cambiar a modo claro",
+    "toDark": "Cambiar a modo oscuro",
+    "light": "Modo claro",
+    "dark": "Modo oscuro"
+  }
+}

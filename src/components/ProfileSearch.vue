@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProfileSearch, type ProfileHit } from '../composables/useProfileSearch'
 
 const router = useRouter()
+const { t } = useI18n()
 const { searchProfiles } = useProfileSearch()
 
 const query = ref('')
@@ -14,7 +16,7 @@ const root = ref<HTMLElement | null>(null)
 let debounce: ReturnType<typeof setTimeout> | undefined
 
 function nameOf(hit: ProfileHit) {
-  return hit.display_name || hit.username || 'Lector'
+  return hit.display_name || hit.username || t('profile.readerFallback')
 }
 function initialsOf(hit: ProfileHit) {
   return nameOf(hit)
@@ -66,7 +68,7 @@ onBeforeUnmount(() => {
       <input
         v-model="query"
         type="text"
-        placeholder="Buscar lectores…"
+        :placeholder="t('search.placeholder')"
         class="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-11 pr-3.5 text-stone-900 placeholder:text-stone-400 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500"
         @input="onInput"
         @focus="open = true"
@@ -106,7 +108,7 @@ onBeforeUnmount(() => {
         </li>
       </ul>
       <p v-else class="px-3.5 py-3 text-sm text-stone-500 dark:text-stone-400">
-        {{ searching ? 'Buscando…' : 'No hay lectores con ese nombre.' }}
+        {{ searching ? t('common.searching') : t('search.noResults') }}
       </p>
     </div>
   </div>

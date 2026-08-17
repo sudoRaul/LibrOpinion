@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import AuthShell from '../components/AuthShell.vue'
 import AppTextField from '../components/AppTextField.vue'
@@ -8,6 +9,7 @@ import GoogleButton from '../components/GoogleButton.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const email = ref('')
 const password = ref('')
@@ -19,7 +21,7 @@ const confirmationSent = ref(false)
 async function onSubmit() {
   error.value = null
   if (password.value.length < 6) {
-    error.value = 'La contraseña debe tener al menos 6 caracteres.'
+    error.value = 'auth.err.passwordShort'
     return
   }
   loading.value = true
@@ -49,7 +51,7 @@ async function onGoogle() {
 </script>
 
 <template>
-  <AuthShell title="Crea tu cuenta" subtitle="Empieza a guardar las frases que te marcan.">
+  <AuthShell :title="t('auth.signup.title')" :subtitle="t('auth.signup.subtitle')">
     <!-- Estado: email de confirmación enviado -->
     <div v-if="confirmationSent" class="text-center">
       <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -57,16 +59,16 @@ async function onGoogle() {
           <path d="M4 4h16v16H4zM4 7l8 6 8-6" />
         </svg>
       </div>
-      <p class="mt-4 text-stone-700 dark:text-stone-300">
-        Casi listo. Si <span class="font-medium text-stone-900 dark:text-white">{{ email }}</span> es
-        una cuenta nueva, te hemos enviado un enlace para confirmarla. Si ya tenías cuenta,
-        revisa tu correo o inicia sesión.
-      </p>
+      <i18n-t keypath="auth.signup.confirmBody" tag="p" class="mt-4 text-stone-700 dark:text-stone-300" scope="global">
+        <template #email>
+          <span class="font-medium text-stone-900 dark:text-white">{{ email }}</span>
+        </template>
+      </i18n-t>
       <RouterLink
         to="/login"
         class="mt-6 inline-block rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
       >
-        Ir a iniciar sesión
+        {{ t('auth.signup.goLogin') }}
       </RouterLink>
     </div>
 
@@ -77,26 +79,26 @@ async function onGoogle() {
           v-if="error"
           class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
         >
-          {{ error }}
+          {{ t(error) }}
         </p>
 
         <AppTextField
           id="email"
           v-model="email"
-          label="Email"
+          :label="t('auth.fields.emailLabel')"
           type="email"
           autocomplete="email"
-          placeholder="tu@correo.com"
+          :placeholder="t('auth.fields.emailPlaceholder')"
           :disabled="loading"
         />
         <AppTextField
           id="password"
           v-model="password"
-          label="Contraseña"
+          :label="t('auth.fields.passwordLabel')"
           type="password"
           autocomplete="new-password"
-          placeholder="••••••••"
-          hint="Mínimo 6 caracteres."
+          :placeholder="t('auth.fields.passwordPlaceholder')"
+          :hint="t('auth.fields.passwordHint')"
           :disabled="loading"
         />
 
@@ -105,23 +107,23 @@ async function onGoogle() {
           :disabled="loading"
           class="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
         >
-          {{ loading ? 'Creando cuenta…' : 'Crear cuenta' }}
+          {{ loading ? t('auth.signup.submitting') : t('auth.signup.submit') }}
         </button>
       </form>
 
       <div class="my-6 flex items-center gap-3 text-xs text-stone-400">
         <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
-        o
+        {{ t('common.or') }}
         <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
       </div>
 
-      <GoogleButton :loading="googleLoading" @click="onGoogle" />
+      <GoogleButton :loading="googleLoading" :label="t('auth.google')" @click="onGoogle" />
     </template>
 
     <template #footer>
-      ¿Ya tienes cuenta?
+      {{ t('auth.signup.haveAccount') }}
       <RouterLink to="/login" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
-        Iniciar sesión
+        {{ t('auth.signup.login') }}
       </RouterLink>
     </template>
   </AuthShell>

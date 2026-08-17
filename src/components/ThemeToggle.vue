@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useTheme } from '../composables/useTheme'
 
+const { t } = useI18n()
 const { theme, toggleTheme } = useTheme()
 </script>
 
@@ -8,8 +10,8 @@ const { theme, toggleTheme } = useTheme()
   <button
     type="button"
     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 bg-white/60 text-stone-600 transition-colors hover:bg-white hover:text-stone-900 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white"
-    :aria-label="theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-    :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'"
+    :aria-label="theme === 'dark' ? t('theme.toLight') : t('theme.toDark')"
+    :title="theme === 'dark' ? t('theme.light') : t('theme.dark')"
     @click="toggleTheme"
   >
     <!-- Sol (visible en oscuro: clic → claro) -->

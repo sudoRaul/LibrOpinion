@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useFollowRequests, type FollowRequest } from '../composables/useFollowRequests'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
 
 const router = useRouter()
+const { t } = useI18n()
 const { requests, loading, load, accept, reject } = useFollowRequests()
 
 const busy = new Set<string>()
 
 function displayName(r: FollowRequest): string {
-  return r.follower?.display_name || r.follower?.username || 'Lector'
+  return r.follower?.display_name || r.follower?.username || t('profile.readerFallback')
 }
 function initials(r: FollowRequest): string {
   return displayName(r)
@@ -49,7 +51,7 @@ onMounted(load)
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M11 18l-6-6 6-6" />
           </svg>
-          Volver
+          {{ t('common.back') }}
         </button>
         <div class="flex items-center gap-2">
           <NotificationsBell />
@@ -59,7 +61,7 @@ onMounted(load)
     </header>
 
     <main class="mx-auto max-w-2xl px-4 py-6">
-      <h1 class="mb-4 font-display text-2xl font-semibold text-stone-900 dark:text-white">Solicitudes de seguimiento</h1>
+      <h1 class="mb-4 font-display text-2xl font-semibold text-stone-900 dark:text-white">{{ t('requests.title') }}</h1>
 
       <!-- Cargando -->
       <div v-if="loading" class="space-y-2">
@@ -71,8 +73,8 @@ onMounted(load)
         v-else-if="!requests.length"
         class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
       >
-        <p class="font-display text-lg font-semibold text-stone-800 dark:text-stone-100">No tienes solicitudes pendientes</p>
-        <p class="mt-2 text-stone-500 dark:text-stone-400">Cuando alguien pida seguirte, aparecerá aquí.</p>
+        <p class="font-display text-lg font-semibold text-stone-800 dark:text-stone-100">{{ t('requests.emptyTitle') }}</p>
+        <p class="mt-2 text-stone-500 dark:text-stone-400">{{ t('requests.emptyBody') }}</p>
       </div>
 
       <!-- Lista -->
@@ -107,13 +109,13 @@ onMounted(load)
               class="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
               @click="onAccept(r)"
             >
-              Aceptar
+              {{ t('notifications.accept') }}
             </button>
             <button
               class="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
               @click="onReject(r)"
             >
-              Rechazar
+              {{ t('notifications.reject') }}
             </button>
           </div>
         </li>

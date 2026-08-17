@@ -1,11 +1,13 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{ title?: string; subtitle?: string }>(),
-  {
-    title: 'Colorín colorado, las citas se han acabado',
-    subtitle: 'Has llegado al final. Vuelve pronto: siempre hay una frase nueva esperando.',
-  },
-)
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// title/subtitle son opcionales: si no se pasan, usamos los textos i18n por defecto.
+const props = defineProps<{ title?: string; subtitle?: string }>()
+const { t } = useI18n()
+
+const displayTitle = computed(() => props.title ?? t('endOfList.title'))
+const displaySubtitle = computed(() => props.subtitle ?? t('endOfList.subtitle'))
 </script>
 
 <template>
@@ -25,9 +27,9 @@ withDefaults(
 
     <!-- Frase con magia -->
     <p class="mx-auto mt-5 max-w-sm font-display text-xl font-medium italic text-stone-700 dark:text-stone-200">
-      “{{ title }}”
+      “{{ displayTitle }}”
     </p>
-    <p class="mx-auto mt-2 max-w-xs text-sm text-stone-400 dark:text-stone-500">{{ subtitle }}</p>
+    <p class="mx-auto mt-2 max-w-xs text-sm text-stone-400 dark:text-stone-500">{{ displaySubtitle }}</p>
 
     <!-- Chispitas -->
     <div class="mt-4 flex items-center justify-center gap-1.5 text-emerald-400/70">

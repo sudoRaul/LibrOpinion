@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useFeed } from '../composables/useFeed'
 import { useSuggestions } from '../composables/useSuggestions'
@@ -16,6 +17,7 @@ import type { FeedQuote } from '../composables/useFeed'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 const {
   quotes,
   loading,
@@ -94,7 +96,7 @@ async function logout() {
             v-if="auth.profile?.username"
             :to="`/u/${auth.profile.username}`"
             class="flex items-center"
-            title="Mi perfil"
+            :title="t('feed.myProfile')"
           >
             <img
               v-if="auth.profile.avatar_url"
@@ -113,7 +115,7 @@ async function logout() {
           <RouterLink
             v-if="auth.profile?.is_admin"
             to="/admin"
-            title="Panel de moderación"
+            :title="t('feed.adminPanel')"
             class="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-600 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -126,7 +128,7 @@ async function logout() {
             class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
             @click="logout"
           >
-            Salir
+            {{ t('feed.logout') }}
           </button>
         </div>
       </div>
@@ -148,7 +150,7 @@ async function logout() {
             <path d="M12 5v14M5 12h14" />
           </svg>
         </span>
-        Comparte una cita…
+        {{ t('feed.composerTrigger') }}
       </button>
 
       <!-- Cargando -->
@@ -161,7 +163,7 @@ async function logout() {
         v-else-if="error"
         class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ error }}
+        {{ t('feed.error') }}
       </p>
 
       <!-- Contenido -->
@@ -187,14 +189,14 @@ async function logout() {
             class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
             @click="loadMore"
           >
-            Cargar más
+            {{ t('feed.loadMore') }}
           </button>
         </div>
 
         <!-- Fin del feed: transición hacia el descubrimiento -->
         <EndOfList
           v-if="quotes.length && !hasMore"
-          subtitle="Aquí no se acaba: sigue explorando lectores y citas de la comunidad."
+          :subtitle="t('feed.endSubtitle')"
         />
 
         <!-- Zona "Sigue explorando": personas + citas de la comunidad.
@@ -207,13 +209,13 @@ async function logout() {
           <section v-if="communityQuotes.length">
             <div class="mb-4">
               <h2 class="font-display text-lg font-semibold text-stone-900 dark:text-white">
-                {{ quotes.length ? 'Descubre la comunidad' : 'Aún no sigues a nadie' }}
+                {{ quotes.length ? t('feed.discovery.titleFollowing') : t('feed.discovery.titleNoFollows') }}
               </h2>
               <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                 {{
                   quotes.length
-                    ? 'Citas recientes de otros lectores que quizá quieras seguir.'
-                    : 'Mientras tanto, echa un vistazo a lo que comparte la comunidad.'
+                    ? t('feed.discovery.subtitleFollowing')
+                    : t('feed.discovery.subtitleNoFollows')
                 }}
               </p>
             </div>
@@ -237,16 +239,16 @@ async function logout() {
             class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
           >
             <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">
-              Tu feed está en blanco
+              {{ t('feed.empty.title') }}
             </p>
             <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
-              Publica tu primera cita o sigue a otros lectores para llenar esta página.
+              {{ t('feed.empty.body') }}
             </p>
             <button
               class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
               @click="composerOpen = true"
             >
-              Publicar una cita
+              {{ t('feed.empty.cta') }}
             </button>
           </div>
         </div>

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAdmin, type AdminReport } from '../composables/useAdmin'
 import ThemeToggle from '../components/ThemeToggle.vue'
 
+const { t, locale } = useI18n()
 const { reports, loading, error, filter, load, setFilter, setBan, reviewReport } = useAdmin()
 
 const busyId = ref<string | null>(null)
@@ -16,19 +18,8 @@ const banErr = ref<string | null>(null)
 
 onMounted(load)
 
-const TYPE_LABEL: Record<string, string> = {
-  user: 'Perfil',
-  quote: 'Cita',
-  comment: 'Comentario',
-}
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'Pendiente',
-  reviewed: 'Revisado',
-  dismissed: 'Descartado',
-}
-
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('es-ES', {
+  return new Intl.DateTimeFormat(locale.value, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -64,7 +55,7 @@ async function confirmBan() {
   if (!r?.reported) return
   const reason = banReason.value.trim()
   if (!reason) {
-    banErr.value = 'Escribe el motivo del baneo.'
+    banErr.value = t('admin.errReason')
     return
   }
   banBusy.value = true
@@ -101,7 +92,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
             to="/app"
             class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
           >
-            Volver
+            {{ t('common.back') }}
           </RouterLink>
           <ThemeToggle />
         </div>
@@ -116,26 +107,26 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
           :class="filter === 'pending' ? 'bg-emerald-700 text-white dark:bg-emerald-600' : 'border border-stone-300 text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800'"
           @click="setFilter('pending')"
         >
-          Pendientes
+          {{ t('admin.filterPending') }}
         </button>
         <button
           class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
           :class="filter === 'all' ? 'bg-emerald-700 text-white dark:bg-emerald-600' : 'border border-stone-300 text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800'"
           @click="setFilter('all')"
         >
-          Todos
+          {{ t('admin.filterAll') }}
         </button>
       </div>
 
       <!-- Carga -->
-      <div v-if="loading" class="py-16 text-center text-stone-400">Cargando reportes…</div>
+      <div v-if="loading" class="py-16 text-center text-stone-400">{{ t('admin.loading') }}</div>
 
       <!-- Error -->
       <div
         v-else-if="error"
         class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ error }}
+        {{ t('admin.error') }}
       </div>
 
       <!-- Vacío -->
@@ -146,7 +137,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
           </svg>
         </div>
         <p class="mt-4 text-stone-500 dark:text-stone-400">
-          {{ filter === 'pending' ? 'No hay reportes pendientes. Todo en orden.' : 'No hay reportes.' }}
+          {{ filter === 'pending' ? t('admin.emptyPending') : t('admin.emptyAll') }}
         </p>
       </div>
 
@@ -160,16 +151,16 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
           <!-- Cabecera del reporte -->
           <div class="mb-3 flex flex-wrap items-center gap-2">
             <span class="rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300">
-              {{ r.reason }}
+              {{ t('report.reasons.' + r.reason, r.reason) }}
             </span>
             <span class="rounded-md bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-400">
-              {{ TYPE_LABEL[r.target_type] ?? r.target_type }}
+              {{ t('admin.type.' + r.target_type, r.target_type) }}
             </span>
             <span
               class="rounded-md px-2 py-0.5 text-xs font-medium"
               :class="r.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' : 'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400'"
             >
-              {{ STATUS_LABEL[r.status] ?? r.status }}
+              {{ t('admin.status.' + r.status, r.status) }}
             </span>
             <span class="ml-auto text-xs text-stone-400">{{ formatDate(r.created_at) }}</span>
           </div>
@@ -200,22 +191,22 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
                 >
                   @{{ r.reported.username }}
                 </RouterLink>
-                <span v-else class="text-stone-400">Usuario eliminado</span>
+                <span v-else class="text-stone-400">{{ t('admin.userDeleted') }}</span>
                 <span
                   v-if="r.reported?.is_banned"
                   class="rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                 >
-                  Baneado
+                  {{ t('admin.banned') }}
                 </span>
               </div>
               <p class="truncate text-xs text-stone-500 dark:text-stone-400">
-                Reportado por
+                {{ t('admin.reportedBy') }}
                 <RouterLink
                   v-if="r.reporter?.username"
                   :to="`/u/${r.reporter.username}`"
                   class="hover:underline"
                 >@{{ r.reporter.username }}</RouterLink>
-                <span v-else>alguien</span>
+                <span v-else>{{ t('admin.someone') }}</span>
               </p>
             </div>
           </div>
@@ -235,14 +226,14 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
               :to="`/q/${r.target_id}`"
               class="text-emerald-700 hover:underline dark:text-emerald-400"
             >
-              Ver cita →
+              {{ t('admin.viewQuote') }}
             </RouterLink>
             <RouterLink
               v-if="r.reported?.username"
               :to="`/u/${r.reported.username}`"
               class="text-emerald-700 hover:underline dark:text-emerald-400"
             >
-              Ver perfil →
+              {{ t('admin.viewProfile') }}
             </RouterLink>
           </div>
 
@@ -255,7 +246,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
               :class="r.reported.is_banned ? 'bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-700'"
               @click="onToggleBan(r)"
             >
-              {{ r.reported.is_banned ? 'Quitar baneo' : 'Banear usuario' }}
+              {{ r.reported.is_banned ? t('admin.unban') : t('admin.banUser') }}
             </button>
             <button
               v-if="r.status === 'pending'"
@@ -263,7 +254,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
               class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
               @click="onReview(r, 'reviewed')"
             >
-              Marcar revisado
+              {{ t('admin.markReviewed') }}
             </button>
             <button
               v-if="r.status === 'pending'"
@@ -271,7 +262,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
               class="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-500 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:text-stone-400 dark:hover:bg-stone-800"
               @click="onReview(r, 'dismissed')"
             >
-              Descartar
+              {{ t('admin.dismiss') }}
             </button>
           </div>
         </li>
@@ -286,22 +277,22 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
     >
       <div class="my-8 w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900">
         <h2 class="font-display text-xl font-semibold text-stone-900 dark:text-white">
-          Banear a
+          {{ t('admin.banTitle') }}
           <span class="text-red-600 dark:text-red-400">@{{ banTarget.reported?.username }}</span>
         </h2>
         <p class="mt-1.5 text-sm text-stone-500 dark:text-stone-400">
-          Su contenido se ocultará y recibirá un correo con el motivo. Escríbelo con claridad.
+          {{ t('admin.banDesc') }}
         </p>
 
         <label for="ban-reason" class="mt-4 mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-          Motivo del baneo
+          {{ t('admin.reasonLabel') }}
         </label>
         <textarea
           id="ban-reason"
           v-model="banReason"
           rows="4"
           maxlength="1000"
-          placeholder="Ej.: Insultos reiterados a otros usuarios pese a los avisos."
+          :placeholder="t('admin.reasonPlaceholder')"
           class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
         ></textarea>
 
@@ -313,7 +304,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
             class="rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
             @click="banTarget = null"
           >
-            Cancelar
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -321,7 +312,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
             class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             @click="confirmBan"
           >
-            {{ banBusy ? 'Baneando…' : 'Banear y avisar' }}
+            {{ banBusy ? t('admin.banConfirming') : t('admin.banConfirm') }}
           </button>
         </div>
       </div>

@@ -1,38 +1,30 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
+import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
-// Citas de muestra para las tarjetas flotantes del hero.
-const heroQuotes = [
-  {
-    text: 'Era el mejor de los tiempos, era el peor de los tiempos.',
-    book: 'Historia de dos ciudades',
-    author: 'Charles Dickens',
-    rot: '-5deg',
-  },
-  {
-    text: 'No hay amigo tan leal como un libro.',
-    book: 'Sobre la lectura',
-    author: 'Ernest Hemingway',
-    rot: '4deg',
-  },
-  {
-    text: 'Quien lee mucho y anda mucho, ve mucho y sabe mucho.',
-    book: 'Don Quijote de la Mancha',
-    author: 'Miguel de Cervantes',
-    rot: '-2deg',
-  },
-]
+const { t, tm, rt, locale } = useI18n()
 
-// Frases para la marquesina (se duplican para el bucle infinito).
-const ribbon = [
-  'Un lector vive mil vidas antes de morir.',
-  'Los libros son espejos: solo ves en ellos lo que ya llevas dentro.',
-  'Hasta el infinito y más allá de la última página.',
-  'Leer es soñar con los ojos abiertos.',
-  'Cada libro leído es un peldaño más.',
-  'La lectura es a la mente lo que el ejercicio al cuerpo.',
-]
+// Rotaciones de las tarjetas flotantes del hero (dato visual, no traducible).
+const heroRot = ['-5deg', '4deg', '-2deg']
+
+// Arrays de textos traducibles (dependen del idioma). `tm` devuelve el mensaje
+// crudo y `rt` lo resuelve; los tipamos para poder iterarlos en el template.
+interface HeroQuote { text: string; book: string; author: string }
+interface Feature { title: string; body: string }
+const heroQuotes = computed(() => {
+  void locale.value
+  return tm('landing.heroQuotes') as unknown as HeroQuote[]
+})
+const ribbon = computed(() => {
+  void locale.value
+  return tm('landing.ribbon') as unknown as string[]
+})
+const features = computed(() => {
+  void locale.value
+  return tm('landing.features.items') as unknown as Feature[]
+})
 
 // Reveal al hacer scroll.
 let observer: IntersectionObserver | null = null
@@ -51,21 +43,6 @@ onMounted(() => {
   document.querySelectorAll('.lo-reveal').forEach((el) => observer?.observe(el))
 })
 onBeforeUnmount(() => observer?.disconnect())
-
-const features = [
-  {
-    title: 'Cita y comenta',
-    body: 'Apunta la frase que te marcó, su página y por qué te llegó. Tu biblioteca de subrayados, ordenada.',
-  },
-  {
-    title: 'Sigue a lectores',
-    body: 'Tu feed se llena con las citas de quienes sigues. Descubre a través de los ojos de otros.',
-  },
-  {
-    title: 'Encuentra tu próxima lectura',
-    body: 'Cada cita es una puerta a un libro nuevo. Deja que las frases te guíen al siguiente.',
-  },
-]
 </script>
 
 <template>
@@ -77,27 +54,32 @@ const features = [
     </div>
 
     <!-- Navegación -->
-    <header class="lo-fade-up mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+    <header class="lo-fade-up mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6">
       <div class="flex items-center gap-2">
-        <svg class="h-7 w-7 text-emerald-700 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="h-7 w-7 shrink-0 text-emerald-700 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
           <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
         </svg>
-        <span class="font-display text-xl font-semibold tracking-tight text-stone-900 dark:text-white">librOpinion</span>
+        <span class="font-display text-lg font-semibold tracking-tight text-stone-900 sm:text-xl dark:text-white">librOpinion</span>
       </div>
-      <ThemeToggle />
-      <nav class="flex items-center gap-2">
+      <nav class="flex items-center gap-1.5 sm:gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+
+        <!-- Login: siempre visible arriba-derecha (donde el usuario lo espera). -->
         <RouterLink
           to="/login"
-          class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
+          class="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 sm:px-4 dark:text-stone-300 dark:hover:text-white"
         >
-          Iniciar sesión
+          {{ t('landing.nav.login') }}
         </RouterLink>
+
+        <!-- Registro: inline en escritorio; en móvil su CTA vive en el hero. -->
         <RouterLink
           to="/signup"
-          class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 hover:shadow-md dark:bg-emerald-600 dark:hover:bg-emerald-500"
+          class="hidden whitespace-nowrap rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 hover:shadow-md sm:inline-flex dark:bg-emerald-600 dark:hover:bg-emerald-500"
         >
-          Crear cuenta
+          {{ t('landing.nav.signup') }}
         </RouterLink>
       </nav>
     </header>
@@ -111,29 +93,28 @@ const features = [
             style="animation-delay: 0.05s"
           >
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
-            Una red social para lectores
+            {{ t('landing.badge') }}
           </span>
 
           <h1
             class="lo-fade-up mt-5 font-display text-5xl font-semibold leading-[1.05] tracking-tight text-stone-900 sm:text-6xl dark:text-white"
             style="animation-delay: 0.12s"
           >
-            Las frases que te
+            {{ t('landing.hero.titleBefore') }}
             <span class="relative whitespace-nowrap text-emerald-700 dark:text-emerald-400">
-              marcan
+              {{ t('landing.hero.titleHighlight') }}
               <svg class="absolute -bottom-2 left-0 h-3 w-full text-amber-400" viewBox="0 0 200 12" preserveAspectRatio="none" fill="none">
                 <path d="M2 9C40 3 160 3 198 9" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
               </svg>
             </span>
-            merecen un lugar.
+            {{ t('landing.hero.titleAfter') }}
           </h1>
 
           <p
             class="lo-fade-up mt-6 max-w-md text-lg leading-relaxed text-stone-600 dark:text-stone-400"
             style="animation-delay: 0.2s"
           >
-            Guarda las citas de los libros que lees, añade tu página y tu opinión,
-            y descubre lo que subrayan las personas a las que sigues.
+            {{ t('landing.hero.subtitle') }}
           </p>
 
           <div class="lo-fade-up mt-8 flex flex-wrap items-center gap-3" style="animation-delay: 0.28s">
@@ -141,7 +122,7 @@ const features = [
               to="/signup"
               class="group inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-6 py-3 text-base font-medium text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-lg dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              Empieza a citar gratis
+              {{ t('landing.hero.ctaPrimary') }}
               <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
@@ -150,7 +131,7 @@ const features = [
               to="/login"
               class="inline-flex items-center rounded-xl border border-stone-300 bg-white/60 px-6 py-3 text-base font-medium text-stone-700 backdrop-blur transition-colors hover:bg-white dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-200 dark:hover:bg-stone-800"
             >
-              Ya tengo cuenta
+              {{ t('landing.hero.ctaSecondary') }}
             </RouterLink>
           </div>
         </div>
@@ -168,13 +149,13 @@ const features = [
             ]"
             :style="{ animationDelay: `${0.35 + i * 0.15}s` }"
           >
-            <div class="lo-float-rot" :style="{ '--rot': q.rot, animationDelay: `${i * 1.1}s` }">
+            <div class="lo-float-rot" :style="{ '--rot': heroRot[i], animationDelay: `${i * 1.1}s` }">
               <svg class="h-6 w-6 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M7.5 6C5 6 3 8 3 10.5S5 15 7.5 15c0 2-1 3-3 3.5 3 0 6-2 6-6.5V6zM19.5 6c-2.5 0-4.5 2-4.5 4.5S17 15 19.5 15c0 2-1 3-3 3.5 3 0 6-2 6-6.5V6z" />
               </svg>
-              <p class="mt-3 font-quote text-lg leading-snug text-stone-800 dark:text-stone-100">{{ q.text }}</p>
-              <p class="mt-4 text-sm font-medium text-stone-900 dark:text-white">{{ q.book }}</p>
-              <p class="text-sm text-stone-500 dark:text-stone-400">{{ q.author }}</p>
+              <p class="mt-3 font-quote text-lg leading-snug text-stone-800 dark:text-stone-100">{{ rt(q.text) }}</p>
+              <p class="mt-4 text-sm font-medium text-stone-900 dark:text-white">{{ rt(q.book) }}</p>
+              <p class="text-sm text-stone-500 dark:text-stone-400">{{ rt(q.author) }}</p>
             </div>
           </article>
         </div>
@@ -188,7 +169,7 @@ const features = [
             :key="i"
             class="flex items-center gap-10 font-quote text-lg text-stone-500 dark:text-stone-400"
           >
-            {{ line }}
+            {{ rt(line) }}
             <span class="text-amber-400">✦</span>
           </span>
         </div>
@@ -201,17 +182,17 @@ const features = [
       <section class="mx-auto max-w-6xl px-6 py-24">
         <div class="lo-reveal mx-auto max-w-2xl text-center">
           <h2 class="font-display text-4xl font-semibold tracking-tight text-stone-900 dark:text-white">
-            Tu biblioteca de frases favoritas
+            {{ t('landing.features.heading') }}
           </h2>
           <p class="mt-4 text-lg text-stone-600 dark:text-stone-400">
-            Todo lo que subrayas, en un mismo lugar, y compartido con quien quieras.
+            {{ t('landing.features.subheading') }}
           </p>
         </div>
 
         <div class="mt-14 grid gap-6 md:grid-cols-3">
           <div
             v-for="(f, i) in features"
-            :key="f.title"
+            :key="i"
             class="lo-reveal group rounded-2xl border border-stone-200 bg-white/70 p-7 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg dark:border-stone-800 dark:bg-stone-900/60"
             :style="{ transitionDelay: `${i * 90}ms` }"
           >
@@ -226,8 +207,8 @@ const features = [
                 <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
               </svg>
             </div>
-            <h3 class="mt-5 font-display text-xl font-semibold text-stone-900 dark:text-white">{{ f.title }}</h3>
-            <p class="mt-2 leading-relaxed text-stone-600 dark:text-stone-400">{{ f.body }}</p>
+            <h3 class="mt-5 font-display text-xl font-semibold text-stone-900 dark:text-white">{{ rt(f.title) }}</h3>
+            <p class="mt-2 leading-relaxed text-stone-600 dark:text-stone-400">{{ rt(f.body) }}</p>
           </div>
         </div>
       </section>
@@ -238,16 +219,16 @@ const features = [
           <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-emerald-600/30 blur-3xl"></div>
           <div class="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-amber-500/20 blur-3xl"></div>
           <h2 class="relative font-display text-4xl font-semibold text-white sm:text-5xl">
-            Empieza tu colección de citas
+            {{ t('landing.finalCta.heading') }}
           </h2>
           <p class="relative mx-auto mt-4 max-w-lg text-lg text-stone-300">
-            Únete gratis y guarda la primera frase que te quite el aliento.
+            {{ t('landing.finalCta.subtitle') }}
           </p>
           <RouterLink
             to="/signup"
             class="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-base font-medium text-stone-900 transition-transform hover:-translate-y-0.5"
           >
-            Crear mi cuenta
+            {{ t('landing.finalCta.button') }}
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
@@ -266,7 +247,7 @@ const features = [
           </svg>
           <span class="font-display font-semibold text-stone-700 dark:text-stone-200">librOpinion</span>
         </div>
-        <p>Hecho para quienes subrayan.</p>
+        <p>{{ t('landing.footer') }}</p>
       </div>
     </footer>
   </div>

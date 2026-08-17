@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ThemeToggle from './ThemeToggle.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 defineProps<{ title: string; subtitle?: string }>()
 </script>
@@ -21,7 +22,10 @@ defineProps<{ title: string; subtitle?: string }>()
         </svg>
         <span class="font-display text-xl font-semibold tracking-tight text-stone-900 dark:text-white">librOpinion</span>
       </RouterLink>
-      <ThemeToggle />
+      <div class="flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
     </header>
 
     <!-- Tarjeta central -->

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../lib/database.types'
+import { applyLocale } from '../i18n'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -47,6 +48,8 @@ export const useAuthStore = defineStore('auth', {
         console.error('Error cargando el profile:', error.message)
       }
       this.profile = data ?? null
+      // La preferencia de idioma del perfil manda sobre la detección del navegador.
+      if (this.profile?.locale) applyLocale(this.profile.locale)
     },
 
     /**
@@ -109,14 +112,14 @@ export const useAuthStore = defineStore('auth', {
 
     /** Elige el username en el onboarding (RLS permite editar el propio profile). */
     async updateUsername(username: string): Promise<{ error: string | null }> {
-      if (!this.user) return { error: 'No hay ninguna sesión activa.' }
+      if (!this.user) return { error: 'auth.err.noSession' }
       const { error } = await supabase
         .from('profiles')
         .update({ username })
         .eq('id', this.user.id)
       if (error) {
         // 23505 = violación de UNIQUE (username ya usado).
-        if (error.code === '23505') return { error: 'Ese nombre de usuario ya está en uso.' }
+        if (error.code === '23505') return { error: 'auth.err.usernameTaken' }
         return { error: error.message }
       }
       await this.fetchProfile()
@@ -131,7 +134,7 @@ export const useAuthStore = defineStore('auth', {
       avatar_url: string | null
       is_private?: boolean
     }): Promise<{ error: string | null }> {
-      if (!this.user) return { error: 'No hay ninguna sesión activa.' }
+      if (!this.user) return { error: 'auth.err.noSession' }
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -144,7 +147,7 @@ export const useAuthStore = defineStore('auth', {
         })
         .eq('id', this.user.id)
       if (error) {
-        if (error.code === '23505') return { error: 'Ese nombre de usuario ya está en uso.' }
+        if (error.code === '23505') return { error: 'auth.err.usernameTaken' }
         return { error: error.message }
       }
       await this.fetchProfile()
@@ -153,14 +156,17 @@ export const useAuthStore = defineStore('auth', {
   },
 })
 
-/** Traduce los mensajes de error más comunes de Supabase Auth al español. */
+/**
+ * Mapea los errores de Supabase Auth a CLAVES de i18n (la vista las traduce con
+ * `t()`). Si no reconocemos el error, devolvemos el mensaje tal cual (t() lo
+ * mostrará literal al no encontrar la clave).
+ */
 function translateAuthError(message: string): string {
   const m = message.toLowerCase()
-  if (m.includes('invalid login credentials')) return 'Email o contraseña incorrectos.'
-  if (m.includes('user already registered')) return 'Ese email ya está registrado.'
-  if (m.includes('password should be at least'))
-    return 'La contraseña debe tener al menos 6 caracteres.'
-  if (m.includes('unable to validate email address')) return 'El email no es válido.'
-  if (m.includes('email rate limit')) return 'Demasiados intentos. Prueba de nuevo en un rato.'
+  if (m.includes('invalid login credentials')) return 'auth.err.invalidCredentials'
+  if (m.includes('user already registered')) return 'auth.err.alreadyRegistered'
+  if (m.includes('password should be at least')) return 'auth.err.passwordShort'
+  if (m.includes('unable to validate email address')) return 'auth.err.invalidEmail'
+  if (m.includes('email rate limit')) return 'auth.err.rateLimit'
   return message
 }

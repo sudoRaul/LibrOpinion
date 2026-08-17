@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useFollowList, type FollowListMode, type FollowListUser } from '../composables/useFollowList'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   open: boolean
@@ -15,13 +18,15 @@ const router = useRouter()
 const auth = useAuthStore()
 const { items, loading, error, load, toggle } = useFollowList()
 
-const title = computed(() => (props.mode === 'followers' ? 'Seguidores' : 'Siguiendo'))
+const title = computed(() =>
+  props.mode === 'followers' ? t('followList.followers') : t('followList.following'),
+)
 const emptyText = computed(() =>
-  props.mode === 'followers' ? 'Todavía no tiene seguidores.' : 'Todavía no sigue a nadie.',
+  props.mode === 'followers' ? t('followList.emptyFollowers') : t('followList.emptyFollowing'),
 )
 
 function displayName(u: FollowListUser): string {
-  return u.display_name || u.username || 'Lector'
+  return u.display_name || u.username || t('profile.readerFallback')
 }
 function initials(u: FollowListUser): string {
   return displayName(u)
@@ -73,7 +78,7 @@ async function onToggle(u: FollowListUser) {
           <button
             type="button"
             class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
-            aria-label="Cerrar"
+            :aria-label="t('common.close')"
             @click="emit('close')"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -94,7 +99,7 @@ async function onToggle(u: FollowListUser) {
             v-else-if="error"
             class="m-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
           >
-            {{ error }}
+            {{ t('followList.error') }}
           </p>
 
           <!-- Vacío -->
@@ -138,12 +143,12 @@ async function onToggle(u: FollowListUser) {
                 @click="onToggle(u)"
               >
                 <template v-if="u.isFollowing">
-                  <span class="group-hover:hidden">Siguiendo</span>
-                  <span class="hidden group-hover:inline">Dejar de seguir</span>
+                  <span class="group-hover:hidden">{{ t('followList.followingState') }}</span>
+                  <span class="hidden group-hover:inline">{{ t('followList.unfollow') }}</span>
                 </template>
-                <template v-else>Seguir</template>
+                <template v-else>{{ t('followList.follow') }}</template>
               </button>
-              <span v-else class="flex-none text-xs text-stone-400 dark:text-stone-500">Tú</span>
+              <span v-else class="flex-none text-xs text-stone-400 dark:text-stone-500">{{ t('followList.you') }}</span>
             </li>
           </ul>
         </div>

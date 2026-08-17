@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from './stores/auth'
 import { useRealtime } from './composables/useRealtime'
 import { useNotifications } from './composables/useNotifications'
@@ -9,6 +10,7 @@ import ReportModal from './components/ReportModal.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 const realtime = useRealtime()
 const notifications = useNotifications()
 const followRequests = useFollowRequests()
@@ -50,21 +52,21 @@ onBeforeUnmount(() => realtime.stop())
             <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
           </svg>
         </div>
-        <h1 class="mt-5 font-display text-2xl font-semibold text-stone-900 dark:text-white">Cuenta suspendida</h1>
+        <h1 class="mt-5 font-display text-2xl font-semibold text-stone-900 dark:text-white">{{ t('suspended.title') }}</h1>
         <p class="mx-auto mt-3 max-w-sm text-stone-500 dark:text-stone-400">
-          Tu cuenta ha sido suspendida por incumplir las normas de la comunidad. Si crees que es un error, ponte en contacto con nosotros.
+          {{ t('suspended.body') }}
         </p>
         <div
           v-if="auth.profile?.ban_reason"
           class="mx-auto mt-4 max-w-sm rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
         >
-          <span class="font-semibold">Motivo:</span> {{ auth.profile.ban_reason }}
+          <span class="font-semibold">{{ t('suspended.reason') }}</span> {{ auth.profile.ban_reason }}
         </div>
         <button
           class="mt-6 rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
           @click="logout"
         >
-          Cerrar sesión
+          {{ t('suspended.logout') }}
         </button>
       </div>
     </div>

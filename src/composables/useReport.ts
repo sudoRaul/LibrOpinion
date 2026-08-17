@@ -11,12 +11,14 @@ export interface ReportTarget {
   label?: string // texto de contexto para el modal (@usuario, extracto…)
 }
 
+// Códigos canónicos (se guardan en la BD). La etiqueta visible se traduce en la
+// UI con `report.reasons.<code>`, así el admin puede mostrarlos en su idioma.
 export const REPORT_REASONS = [
-  'Insultos o acoso',
-  'Spam',
-  'Contenido inapropiado',
-  'Suplantación de identidad',
-  'Otro',
+  'harassment',
+  'spam',
+  'inappropriate',
+  'impersonation',
+  'other',
 ] as const
 
 // Estado singleton: un único modal de reporte para toda la app.
@@ -31,9 +33,10 @@ function close() {
   open.value = false
 }
 
+// Devuelve una clave i18n en `error` (la UI la traduce con t()).
 async function submit(reason: string, detail: string): Promise<{ error: string | null }> {
   const auth = useAuthStore()
-  if (!auth.user || !target.value) return { error: 'No se pudo enviar el reporte.' }
+  if (!auth.user || !target.value) return { error: 'report.errSend' }
   const t = target.value
 
   const { error } = await supabase.from('reports').insert({
@@ -44,7 +47,7 @@ async function submit(reason: string, detail: string): Promise<{ error: string |
     reason,
     detail: detail.trim() || null,
   })
-  if (error) return { error: 'No se pudo enviar el reporte. Inténtalo de nuevo.' }
+  if (error) return { error: 'report.errSend' }
   return { error: null }
 }
 

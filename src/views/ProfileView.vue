@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProfile, clearActiveProfile } from '../composables/useProfile'
 import { useReport } from '../composables/useReport'
 import ThemeToggle from '../components/ThemeToggle.vue'
@@ -15,6 +16,7 @@ import type { FollowListMode } from '../composables/useFollowList'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const {
   profile,
   quotes,
@@ -88,7 +90,7 @@ onBeforeUnmount(() => {
 })
 
 const displayName = computed(
-  () => profile.value?.display_name || profile.value?.username || 'Lector',
+  () => profile.value?.display_name || profile.value?.username || t('profile.readerFallback'),
 )
 const initials = computed(() =>
   displayName.value
@@ -149,7 +151,7 @@ function onProfileUpdated(newUsername: string) {
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M11 18l-6-6 6-6" />
           </svg>
-          Feed
+          {{ t('profile.feed') }}
         </RouterLink>
         <div class="flex items-center gap-2">
           <NotificationsBell />
@@ -167,13 +169,13 @@ function onProfileUpdated(newUsername: string) {
 
       <!-- No encontrado -->
       <div v-else-if="notFound" class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700">
-        <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">Perfil no encontrado</p>
-        <p class="mt-2 text-stone-500 dark:text-stone-400">No existe ningún usuario con ese nombre.</p>
+        <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">{{ t('profile.notFoundTitle') }}</p>
+        <p class="mt-2 text-stone-500 dark:text-stone-400">{{ t('profile.notFoundBody') }}</p>
         <button
           class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="router.push('/app')"
         >
-          Volver al feed
+          {{ t('profile.backToFeed') }}
         </button>
       </div>
 
@@ -182,7 +184,7 @@ function onProfileUpdated(newUsername: string) {
         v-else-if="error"
         class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ error }}
+        {{ t('profile.error') }}
       </p>
 
       <!-- Perfil -->
@@ -197,8 +199,8 @@ function onProfileUpdated(newUsername: string) {
               <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
             </svg>
           </div>
-          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Perfil no disponible</p>
-          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">No puedes ver este perfil.</p>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">{{ t('profile.unavailableTitle') }}</p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">{{ t('profile.unavailableBody') }}</p>
         </div>
 
         <template v-else>
@@ -208,7 +210,7 @@ function onProfileUpdated(newUsername: string) {
           class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30"
         >
           <p class="text-sm text-emerald-900 dark:text-emerald-200">
-            <span class="font-semibold">@{{ profile.username }}</span> quiere seguirte
+            <span class="font-semibold">@{{ profile.username }}</span> {{ t('notifications.verb.follow_request') }}
           </p>
           <div class="flex flex-none gap-2">
             <button
@@ -216,14 +218,14 @@ function onProfileUpdated(newUsername: string) {
               class="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
               @click="acceptIncomingRequest"
             >
-              Aceptar
+              {{ t('notifications.accept') }}
             </button>
             <button
               :disabled="incomingBusy"
               class="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-800/70 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
               @click="rejectIncomingRequest"
             >
-              Rechazar
+              {{ t('notifications.reject') }}
             </button>
           </div>
         </div>
@@ -256,7 +258,7 @@ function onProfileUpdated(newUsername: string) {
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    aria-label="Cuenta privada"
+                    :aria-label="t('profile.privateAlt')"
                   >
                     <rect x="3" y="11" width="18" height="11" rx="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -275,7 +277,7 @@ function onProfileUpdated(newUsername: string) {
                 class="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                 @click="unblock"
               >
-                Desbloquear
+                {{ t('profile.unblock') }}
               </button>
 
               <!-- Follow tri-estado -->
@@ -293,21 +295,21 @@ function onProfileUpdated(newUsername: string) {
                 @click="toggleFollow"
               >
                 <template v-if="followState === 'accepted'">
-                  <span class="group-hover:hidden">Siguiendo</span>
-                  <span class="hidden group-hover:inline">Dejar de seguir</span>
+                  <span class="group-hover:hidden">{{ t('profile.following') }}</span>
+                  <span class="hidden group-hover:inline">{{ t('profile.unfollow') }}</span>
                 </template>
                 <template v-else-if="followState === 'pending'">
-                  <span class="group-hover:hidden">Solicitado</span>
-                  <span class="hidden group-hover:inline">Cancelar</span>
+                  <span class="group-hover:hidden">{{ t('profile.requested') }}</span>
+                  <span class="hidden group-hover:inline">{{ t('profile.cancel') }}</span>
                 </template>
-                <template v-else>{{ profile.is_private ? 'Solicitar seguir' : 'Seguir' }}</template>
+                <template v-else>{{ profile.is_private ? t('profile.requestFollow') : t('profile.follow') }}</template>
               </button>
 
               <!-- Menú ⋯ (bloquear) -->
               <div v-if="!iBlockedThem" class="relative" @click.stop>
                 <button
                   class="rounded-lg p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-                  aria-label="Más opciones"
+                  :aria-label="t('profile.moreOptions')"
                   @click="menuOpen = !menuOpen"
                 >
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -326,7 +328,7 @@ function onProfileUpdated(newUsername: string) {
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                       <path d="M4 22v-7" />
                     </svg>
-                    Reportar
+                    {{ t('profile.report') }}
                   </button>
                   <button
                     class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
@@ -335,7 +337,7 @@ function onProfileUpdated(newUsername: string) {
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
                     </svg>
-                    Bloquear
+                    {{ t('profile.block') }}
                   </button>
                 </div>
               </div>
@@ -346,7 +348,7 @@ function onProfileUpdated(newUsername: string) {
               class="flex-none rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
               @click="editing = true"
             >
-              Editar perfil
+              {{ t('profile.editProfile') }}
             </button>
           </div>
 
@@ -359,7 +361,7 @@ function onProfileUpdated(newUsername: string) {
               :class="canSeeLists ? 'hover:text-stone-900 dark:hover:text-white' : ''"
               @click="openFollowList('followers')"
             >
-              <span class="font-semibold text-stone-900 dark:text-white">{{ followers }}</span> seguidores
+              <span class="font-semibold text-stone-900 dark:text-white">{{ followers }}</span> {{ t('profile.followersLabel') }}
             </button>
             <button
               :disabled="!canSeeLists"
@@ -367,14 +369,14 @@ function onProfileUpdated(newUsername: string) {
               :class="canSeeLists ? 'hover:text-stone-900 dark:hover:text-white' : ''"
               @click="openFollowList('following')"
             >
-              <span class="font-semibold text-stone-900 dark:text-white">{{ following }}</span> siguiendo
+              <span class="font-semibold text-stone-900 dark:text-white">{{ following }}</span> {{ t('profile.followingLabel') }}
             </button>
           </div>
         </section>
 
         <!-- Citas del usuario -->
         <h2 class="mb-4 mt-8 font-display text-lg font-semibold text-stone-900 dark:text-white">
-          Citas
+          {{ t('profile.quotesHeading') }}
         </h2>
 
         <!-- Lo he bloqueado -->
@@ -387,8 +389,8 @@ function onProfileUpdated(newUsername: string) {
               <circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" />
             </svg>
           </div>
-          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Has bloqueado a @{{ profile.username }}</p>
-          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">No veis vuestro contenido mutuamente. Desbloquea para volver a interactuar.</p>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">{{ t('profile.blockedTitle', { username: profile.username }) }}</p>
+          <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">{{ t('profile.blockedBody') }}</p>
         </div>
 
         <!-- Cuenta privada que no puedo ver: candado -->
@@ -402,19 +404,19 @@ function onProfileUpdated(newUsername: string) {
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </div>
-          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">Esta cuenta es privada</p>
+          <p class="mt-4 font-display text-lg font-semibold text-stone-800 dark:text-stone-100">{{ t('profile.privateTitle') }}</p>
           <p class="mx-auto mt-2 max-w-xs text-stone-500 dark:text-stone-400">
             {{
               followState === 'pending'
-                ? 'Tu solicitud está pendiente de aprobación. Cuando te acepte, verás sus citas.'
-                : 'Solicita seguir a @' + profile.username + ' para ver sus citas.'
+                ? t('profile.privatePending')
+                : t('profile.privateRequest', { username: profile.username })
             }}
           </p>
         </div>
 
         <template v-else>
           <div v-if="!quotes.length" class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500 dark:border-stone-700 dark:text-stone-400">
-            {{ isSelf ? 'Aún no has publicado ninguna cita.' : 'Todavía no ha publicado citas.' }}
+            {{ isSelf ? t('profile.emptySelf') : t('profile.emptyOther') }}
           </div>
           <div v-else class="space-y-4">
             <QuoteCard
@@ -436,14 +438,14 @@ function onProfileUpdated(newUsername: string) {
               class="w-full rounded-xl border border-stone-200 bg-white py-3 text-sm font-medium text-stone-600 transition-colors hover:border-emerald-300 hover:text-stone-900 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-emerald-800 dark:hover:text-white"
               @click="loadMoreQuotes"
             >
-              Cargar más
+              {{ t('feed.loadMore') }}
             </button>
           </div>
 
           <!-- Fin de las citas del perfil -->
           <EndOfList
             v-if="quotes.length && !quotesHasMore"
-            :subtitle="isSelf ? 'Has llegado al final de tus citas.' : 'No hay más citas de este lector, por ahora.'"
+            :subtitle="isSelf ? t('profile.endSelf') : t('profile.endOther')"
           />
         </template>
 

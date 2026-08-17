@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useQuote } from '../composables/useQuote'
 import { useAuthStore } from '../stores/auth'
+
+const { t } = useI18n()
 import ThemeToggle from '../components/ThemeToggle.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
 import QuoteCard from '../components/QuoteCard.vue'
@@ -68,7 +71,7 @@ async function copyLink() {
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M11 18l-6-6 6-6" />
           </svg>
-          Volver
+          {{ t('common.back') }}
         </button>
 
         <div class="flex items-center gap-2">
@@ -78,13 +81,13 @@ async function copyLink() {
               to="/login"
               class="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
             >
-              Iniciar sesión
+              {{ t('landing.nav.login') }}
             </RouterLink>
             <RouterLink
               to="/signup"
               class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              Crear cuenta
+              {{ t('landing.nav.signup') }}
             </RouterLink>
           </template>
           <template v-else>
@@ -104,25 +107,23 @@ async function copyLink() {
         v-else-if="notFound"
         class="rounded-2xl border border-dashed border-stone-300 p-10 text-center dark:border-stone-700"
       >
-        <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">Cita no encontrada</p>
+        <p class="font-display text-xl font-semibold text-stone-800 dark:text-stone-100">{{ t('quoteView.notFoundTitle') }}</p>
         <p class="mt-2 text-stone-500 dark:text-stone-400">
-          {{ isGuest
-            ? 'Puede que sea de una cuenta privada, que se haya eliminado o que el enlace no sea válido.'
-            : 'Puede que se haya eliminado o que el enlace no sea válido.' }}
+          {{ isGuest ? t('quoteView.notFoundGuest') : t('quoteView.notFoundUser') }}
         </p>
         <button
           v-if="isGuest"
           class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="router.push('/login')"
         >
-          Iniciar sesión
+          {{ t('quoteView.login') }}
         </button>
         <button
           v-else
           class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="router.push('/app')"
         >
-          Ir al feed
+          {{ t('quoteView.goFeed') }}
         </button>
       </div>
 
@@ -131,13 +132,13 @@ async function copyLink() {
         v-else-if="error"
         class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ error }}
+        {{ t('quoteView.error') }}
       </p>
 
       <!-- Cita -->
       <template v-else-if="quote">
         <div class="mb-4 flex items-center justify-between">
-          <h1 class="font-display text-lg font-semibold text-stone-900 dark:text-white">Cita</h1>
+          <h1 class="font-display text-lg font-semibold text-stone-900 dark:text-white">{{ t('quoteView.heading') }}</h1>
           <button
             class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
             @click="copyLink"
@@ -146,7 +147,7 @@ async function copyLink() {
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            {{ copied ? '¡Enlace copiado!' : 'Copiar enlace' }}
+            {{ copied ? t('quoteView.copied') : t('quoteView.copyLink') }}
           </button>
         </div>
 
@@ -170,24 +171,23 @@ async function copyLink() {
           class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-6 text-center dark:border-emerald-900/50 dark:bg-emerald-950/30"
         >
           <p class="font-display text-lg font-semibold text-stone-900 dark:text-white">
-            Guarda las frases que te marcan
+            {{ t('quoteView.ctaTitle') }}
           </p>
           <p class="mx-auto mt-1.5 max-w-md text-sm text-stone-600 dark:text-stone-400">
-            librOpinion es una red social para lectores: apunta las citas de tus libros,
-            añade tu opinión y descubre lo que subrayan las personas a las que sigues.
+            {{ t('quoteView.ctaBody') }}
           </p>
           <div class="mt-4 flex flex-wrap justify-center gap-2">
             <RouterLink
               to="/signup"
               class="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              Crear cuenta gratis
+              {{ t('quoteView.ctaSignup') }}
             </RouterLink>
             <RouterLink
               to="/login"
               class="rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-white dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
             >
-              Iniciar sesión
+              {{ t('quoteView.ctaLogin') }}
             </RouterLink>
           </div>
         </div>

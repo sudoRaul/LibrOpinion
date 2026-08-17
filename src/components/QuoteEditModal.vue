@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useQuotes } from '../composables/useQuotes'
 import type { FeedQuote } from '../composables/useFeed'
+
+const { t } = useI18n()
 
 const props = defineProps<{ open: boolean; quote: FeedQuote | null }>()
 const emit = defineEmits<{ close: []; updated: [quote: FeedQuote] }>()
@@ -35,11 +38,11 @@ async function submit() {
 
   const text = content.value.trim()
   if (text.length < 1) {
-    error.value = 'Escribe la cita.'
+    error.value = t('quoteForm.errWrite')
     return
   }
   if (text.length > MAX) {
-    error.value = `La cita no puede superar ${MAX} caracteres.`
+    error.value = t('quoteForm.errTooLong', { max: MAX })
     return
   }
 
@@ -47,7 +50,7 @@ async function submit() {
   if (page.value.trim() !== '') {
     const n = Number(page.value)
     if (!Number.isInteger(n) || n <= 0) {
-      error.value = 'La página debe ser un número entero positivo.'
+      error.value = t('quoteForm.errPageInvalid')
       return
     }
     pageNum = n
@@ -62,7 +65,7 @@ async function submit() {
   saving.value = false
 
   if (err || !quote) {
-    error.value = err ?? 'No se pudo guardar.'
+    error.value = t('editQuote.errSaveFailed')
     return
   }
   emit('updated', quote)
@@ -82,14 +85,14 @@ async function submit() {
         class="my-8 w-full max-w-lg rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900"
         role="dialog"
         aria-modal="true"
-        aria-label="Editar cita"
+        :aria-label="t('editQuote.title')"
       >
         <div class="mb-5 flex items-center justify-between">
-          <h2 class="font-display text-2xl font-semibold text-stone-900 dark:text-white">Editar cita</h2>
+          <h2 class="font-display text-2xl font-semibold text-stone-900 dark:text-white">{{ t('editQuote.title') }}</h2>
           <button
             type="button"
             class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
-            aria-label="Cerrar"
+            :aria-label="t('common.close')"
             @click="emit('close')"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -116,7 +119,7 @@ async function submit() {
           </div>
 
           <div>
-            <label for="edit-content" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">La cita</label>
+            <label for="edit-content" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{{ t('quoteForm.contentLabel') }}</label>
             <textarea
               id="edit-content"
               v-model="content"
@@ -129,7 +132,7 @@ async function submit() {
 
           <div class="w-32">
             <label for="edit-page" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Página <span class="font-normal text-stone-400">(opc.)</span>
+              {{ t('quoteForm.pageLabel') }} <span class="font-normal text-stone-400">{{ t('common.optionalShort') }}</span>
             </label>
             <input
               id="edit-page"
@@ -143,7 +146,7 @@ async function submit() {
 
           <div>
             <label for="edit-note" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Tu nota <span class="font-normal text-stone-400">(opcional)</span>
+              {{ t('quoteForm.noteLabel') }} <span class="font-normal text-stone-400">{{ t('common.optional') }}</span>
             </label>
             <textarea
               id="edit-note"
@@ -159,14 +162,14 @@ async function submit() {
               class="rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
               @click="emit('close')"
             >
-              Cancelar
+              {{ t('common.cancel') }}
             </button>
             <button
               type="submit"
               :disabled="saving"
               class="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              {{ saving ? 'Guardando…' : 'Guardar cambios' }}
+              {{ saving ? t('common.saving') : t('common.saveChanges') }}
             </button>
           </div>
         </form>

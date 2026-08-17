@@ -1,0 +1,377 @@
+{
+  "auth": {
+    "google": "Continue with Google",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to see the quotes from the people you follow.",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create an account"
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Start saving the lines that stay with you.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "login": "Sign in",
+      "confirmBody": "Almost there. If {email} is a new account, we've sent you a link to confirm it. If you already had an account, check your inbox or sign in.",
+      "goLogin": "Go to sign in"
+    },
+    "onboarding": {
+      "title": "Choose your username",
+      "subtitle": "This is how other readers will find you. You can change it later.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "michael_reader",
+      "usernameHint": "Between 3 and 30 characters: letters, numbers and underscore.",
+      "submit": "Continue",
+      "submitting": "Saving…",
+      "signOut": "Sign out"
+    },
+    "fields": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "At least 6 characters."
+    },
+    "err": {
+      "invalidCredentials": "Incorrect email or password.",
+      "alreadyRegistered": "That email is already registered.",
+      "passwordShort": "The password must be at least 6 characters.",
+      "invalidEmail": "The email is not valid.",
+      "rateLimit": "Too many attempts. Try again in a little while.",
+      "usernameTaken": "That username is already taken.",
+      "usernameFormat": "Use between 3 and 30 characters: letters, numbers and underscore (_) only.",
+      "noSession": "There is no active session."
+    }
+  },
+  "landing": {
+    "nav": {
+      "login": "Sign in",
+      "signup": "Create account"
+    },
+    "badge": "A social network for readers",
+    "hero": {
+      "titleBefore": "The lines that",
+      "titleHighlight": "move you",
+      "titleAfter": "deserve a place.",
+      "subtitle": "Save the quotes from the books you read, add your page and your take, and discover what the people you follow are underlining.",
+      "ctaPrimary": "Start quoting for free",
+      "ctaSecondary": "I already have an account"
+    },
+    "heroQuotes": [
+      { "text": "It was the best of times, it was the worst of times.", "book": "A Tale of Two Cities", "author": "Charles Dickens" },
+      { "text": "There is no friend as loyal as a book.", "book": "On Reading", "author": "Ernest Hemingway" },
+      { "text": "He who reads much and walks much, sees much and knows much.", "book": "Don Quixote", "author": "Miguel de Cervantes" }
+    ],
+    "ribbon": [
+      "A reader lives a thousand lives before dying.",
+      "Books are mirrors: you only see in them what you already carry inside.",
+      "To infinity and beyond the last page.",
+      "Reading is dreaming with your eyes open.",
+      "Every book you read is one more step up.",
+      "Reading is to the mind what exercise is to the body."
+    ],
+    "features": {
+      "heading": "Your library of favorite lines",
+      "subheading": "Everything you underline, in one place, and shared with whomever you like.",
+      "items": [
+        { "title": "Quote and comment", "body": "Jot down the line that struck you, its page and why it hit home. Your library of highlights, organized." },
+        { "title": "Follow readers", "body": "Your feed fills up with quotes from the people you follow. Discover through the eyes of others." },
+        { "title": "Find your next read", "body": "Every quote is a door to a new book. Let the lines guide you to the next one." }
+      ]
+    },
+    "finalCta": {
+      "heading": "Start your quote collection",
+      "subtitle": "Join for free and save the first line that takes your breath away.",
+      "button": "Create my account"
+    },
+    "footer": "Made for those who underline."
+  },
+  "feed": {
+    "myProfile": "My profile",
+    "adminPanel": "Moderation panel",
+    "logout": "Log out",
+    "composerTrigger": "Share a quote…",
+    "loadMore": "Load more",
+    "error": "Couldn't load the feed.",
+    "endSubtitle": "This isn't the end: keep exploring readers and quotes from the community.",
+    "discovery": {
+      "titleFollowing": "Discover the community",
+      "titleNoFollows": "You're not following anyone yet",
+      "subtitleFollowing": "Recent quotes from other readers you might want to follow.",
+      "subtitleNoFollows": "In the meantime, take a look at what the community is sharing."
+    },
+    "empty": {
+      "title": "Your feed is empty",
+      "body": "Publish your first quote or follow other readers to fill this page.",
+      "cta": "Publish a quote"
+    }
+  },
+  "quote": {
+    "readerFallback": "Reader",
+    "shareError": "Couldn't share the image.",
+    "menu": {
+      "options": "Quote options",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this quote?",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "reportQuote": "Report quote",
+      "deleteError": "Couldn't delete the quote."
+    },
+    "actions": {
+      "like": "Like",
+      "comment": "Comment",
+      "share": "Share",
+      "shareAria": "Share the quote as an image",
+      "shareTitle": "Share as an image"
+    },
+    "comments": {
+      "placeholder": "Add a comment…",
+      "send": "Send",
+      "delete": "Delete",
+      "report": "Report",
+      "you": "You",
+      "error": "Couldn't post the comment."
+    }
+  },
+  "endOfList": {
+    "title": "That's all, folks — the quotes have run out",
+    "subtitle": "You've reached the end. Come back soon: there's always a new line waiting."
+  },
+  "common": {
+    "or": "or",
+    "language": "Language",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "searching": "Searching…",
+    "saveChanges": "Save changes",
+    "saving": "Saving…",
+    "uploading": "Uploading…",
+    "optional": "(optional)",
+    "optionalShort": "(opt.)"
+  },
+  "quoteForm": {
+    "contentLabel": "The quote",
+    "contentPlaceholder": "“The line that struck you…”",
+    "pageLabel": "Page",
+    "noteLabel": "Your note",
+    "notePlaceholder": "Why it hit home, what it reminded you of…",
+    "errWrite": "Write the quote.",
+    "errTooLong": "The quote can't exceed {max} characters.",
+    "errPageInvalid": "The page must be a positive whole number."
+  },
+  "compose": {
+    "title": "New quote",
+    "aria": "Publish a quote",
+    "submit": "Publish",
+    "submitting": "Publishing…",
+    "errChooseBook": "Choose or create a book.",
+    "errPublishFailed": "Couldn't publish the quote."
+  },
+  "editQuote": {
+    "title": "Edit quote",
+    "errSaveFailed": "Couldn't save."
+  },
+  "bookSelect": {
+    "label": "Book",
+    "change": "Change",
+    "searchPlaceholder": "Search by title or author…",
+    "searching": "Searching…",
+    "noMatches": "No matches.",
+    "addNew": "+ Add a new book",
+    "titlePlaceholder": "Title",
+    "authorPlaceholder": "Author",
+    "coverAlt": "Cover",
+    "coverUrlPlaceholder": "Cover URL (optional)",
+    "uploadCover": "Upload cover",
+    "addBook": "Add book",
+    "adding": "Adding…",
+    "errCoverUpload": "Couldn't upload the cover.",
+    "errRequired": "Title and author are required.",
+    "errCreateFailed": "Couldn't create the book."
+  },
+  "editProfile": {
+    "title": "Edit profile",
+    "avatarPreviewAlt": "Avatar preview",
+    "uploadImage": "Upload image",
+    "avatarHint": "JPG, PNG… max. 2 MB.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your visible name",
+    "usernameLabel": "Username",
+    "usernameHint": "Between 3 and 30 characters. Changing it changes your profile URL.",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell the world what you read…",
+    "avatarUrlLabel": "Avatar URL",
+    "avatarUrlPlaceholder": "https://…",
+    "avatarUrlHint": "Image uploads are coming with Storage. For now, a URL.",
+    "privateTitle": "Private account",
+    "privateDesc": "Only your accepted followers will see your quotes. New ones will have to request to follow you.",
+    "errUsernameFormat": "The username must be 3-30 characters: letters, numbers and underscore.",
+    "errAvatarUpload": "Couldn't upload the image."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "You don't have any notifications yet.",
+    "accept": "Accept",
+    "reject": "Decline",
+    "someone": "Someone",
+    "requestsCount": "{count} follow request | {count} follow requests",
+    "verb": {
+      "follow": "started following you",
+      "like": "liked your quote",
+      "comment": "commented on your quote",
+      "follow_request": "wants to follow you",
+      "follow_accepted": "accepted your request"
+    }
+  },
+  "profile": {
+    "feed": "Feed",
+    "readerFallback": "Reader",
+    "notFoundTitle": "Profile not found",
+    "notFoundBody": "There's no user with that name.",
+    "backToFeed": "Back to feed",
+    "error": "Couldn't load the profile.",
+    "unavailableTitle": "Profile unavailable",
+    "unavailableBody": "You can't view this profile.",
+    "privateAlt": "Private account",
+    "unblock": "Unblock",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "requested": "Requested",
+    "cancel": "Cancel",
+    "requestFollow": "Request to follow",
+    "follow": "Follow",
+    "moreOptions": "More options",
+    "report": "Report",
+    "block": "Block",
+    "editProfile": "Edit profile",
+    "followersLabel": "followers",
+    "followingLabel": "following",
+    "quotesHeading": "Quotes",
+    "blockedTitle": "You've blocked @{username}",
+    "blockedBody": "You don't see each other's content. Unblock to interact again.",
+    "privateTitle": "This account is private",
+    "privatePending": "Your request is pending approval. Once they accept you, you'll see their quotes.",
+    "privateRequest": "Request to follow @{username} to see their quotes.",
+    "emptySelf": "You haven't published any quotes yet.",
+    "emptyOther": "Hasn't published any quotes yet.",
+    "endSelf": "You've reached the end of your quotes.",
+    "endOther": "No more quotes from this reader, for now."
+  },
+  "quoteView": {
+    "heading": "Quote",
+    "copyLink": "Copy link",
+    "copied": "Link copied!",
+    "notFoundTitle": "Quote not found",
+    "notFoundGuest": "It may belong to a private account, have been deleted, or the link may be invalid.",
+    "notFoundUser": "It may have been deleted or the link may be invalid.",
+    "login": "Sign in",
+    "goFeed": "Go to feed",
+    "error": "Couldn't load the quote.",
+    "ctaTitle": "Save the lines that stay with you",
+    "ctaBody": "librOpinion is a social network for readers: jot down the quotes from your books, add your take, and discover what the people you follow underline.",
+    "ctaSignup": "Create a free account",
+    "ctaLogin": "Sign in"
+  },
+  "requests": {
+    "title": "Follow requests",
+    "emptyTitle": "You have no pending requests",
+    "emptyBody": "When someone requests to follow you, it'll appear here."
+  },
+  "search": {
+    "placeholder": "Search readers…",
+    "noResults": "No readers with that name."
+  },
+  "whoToFollow": {
+    "title": "Who to follow",
+    "swipe": "Swipe →",
+    "request": "Request",
+    "follow": "Follow"
+  },
+  "followList": {
+    "followers": "Followers",
+    "following": "Following",
+    "emptyFollowers": "No followers yet.",
+    "emptyFollowing": "Not following anyone yet.",
+    "error": "Couldn't load the list.",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "followingState": "Following",
+    "you": "You"
+  },
+  "report": {
+    "title": "Report",
+    "sent": "Report sent",
+    "targetUser": "this user",
+    "targetQuote": "this quote",
+    "targetComment": "this comment",
+    "intro": "You're reporting {target}. Tell us why.",
+    "detailLabel": "Detail",
+    "detailPlaceholder": "Add any context that helps us review it…",
+    "submit": "Send report",
+    "submitting": "Sending…",
+    "successBody": "Thanks. We've received your report and will review it.",
+    "errSend": "Couldn't send the report. Try again.",
+    "reasons": {
+      "harassment": "Insults or harassment",
+      "spam": "Spam",
+      "inappropriate": "Inappropriate content",
+      "impersonation": "Impersonation",
+      "other": "Other"
+    }
+  },
+  "admin": {
+    "filterPending": "Pending",
+    "filterAll": "All",
+    "loading": "Loading reports…",
+    "error": "Couldn't load the reports.",
+    "emptyPending": "No pending reports. All clear.",
+    "emptyAll": "No reports.",
+    "type": {
+      "user": "Profile",
+      "quote": "Quote",
+      "comment": "Comment"
+    },
+    "status": {
+      "pending": "Pending",
+      "reviewed": "Reviewed",
+      "dismissed": "Dismissed"
+    },
+    "reportedBy": "Reported by",
+    "someone": "someone",
+    "userDeleted": "Deleted user",
+    "banned": "Banned",
+    "viewQuote": "View quote →",
+    "viewProfile": "View profile →",
+    "banUser": "Ban user",
+    "unban": "Remove ban",
+    "markReviewed": "Mark reviewed",
+    "dismiss": "Dismiss",
+    "banTitle": "Ban",
+    "banDesc": "Their content will be hidden and they'll receive an email with the reason. Write it clearly.",
+    "reasonLabel": "Ban reason",
+    "reasonPlaceholder": "e.g.: Repeated insults to other users despite warnings.",
+    "errReason": "Write the ban reason.",
+    "banConfirm": "Ban and notify",
+    "banConfirming": "Banning…"
+  },
+  "suspended": {
+    "title": "Account suspended",
+    "body": "Your account has been suspended for breaking the community rules. If you think this is a mistake, get in touch with us.",
+    "reason": "Reason:",
+    "logout": "Log out"
+  },
+  "theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode",
+    "light": "Light mode",
+    "dark": "Dark mode"
+  }
+}

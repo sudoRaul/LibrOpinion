@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBooks, type Book } from '../composables/useBooks'
 import { useStorage } from '../composables/useStorage'
+
+const { t } = useI18n()
 
 defineProps<{ modelValue: Book | null }>()
 const emit = defineEmits<{ 'update:modelValue': [book: Book | null] }>()
@@ -66,7 +69,7 @@ async function onCoverFile(event: Event) {
   const { url, error } = await uploadCover(file)
   uploadingCover.value = false
   if (error || !url) {
-    createError.value = error ?? 'No se pudo subir la portada.'
+    createError.value = t('bookSelect.errCoverUpload')
     return
   }
   newCover.value = url
@@ -75,7 +78,7 @@ async function onCoverFile(event: Event) {
 async function confirmCreate() {
   createError.value = null
   if (newTitle.value.trim().length < 1 || newAuthor.value.trim().length < 1) {
-    createError.value = 'El título y el autor son obligatorios.'
+    createError.value = t('bookSelect.errRequired')
     return
   }
   creating.value = true
@@ -86,7 +89,7 @@ async function confirmCreate() {
   })
   creating.value = false
   if (error || !book) {
-    createError.value = error ?? 'No se pudo crear el libro.'
+    createError.value = t('bookSelect.errCreateFailed')
     return
   }
   select(book)
@@ -96,7 +99,7 @@ async function confirmCreate() {
 
 <template>
   <div>
-    <span class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">Libro</span>
+    <span class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{{ t('bookSelect.label') }}</span>
 
     <!-- Libro seleccionado -->
     <div
@@ -112,7 +115,7 @@ async function confirmCreate() {
         class="flex-none text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
         @click="clearSelection"
       >
-        Cambiar
+        {{ t('bookSelect.change') }}
       </button>
     </div>
 
@@ -122,7 +125,7 @@ async function confirmCreate() {
         v-model="query"
         type="text"
         :class="inputClass"
-        placeholder="Busca por título o autor…"
+        :placeholder="t('bookSelect.searchPlaceholder')"
         @input="onQueryInput"
       />
 
@@ -139,9 +142,9 @@ async function confirmCreate() {
         </li>
       </ul>
 
-      <p v-else-if="searching" class="mt-2 text-sm text-stone-500 dark:text-stone-400">Buscando…</p>
+      <p v-else-if="searching" class="mt-2 text-sm text-stone-500 dark:text-stone-400">{{ t('bookSelect.searching') }}</p>
       <p v-else-if="query.trim().length >= 2" class="mt-2 text-sm text-stone-500 dark:text-stone-400">
-        No hay coincidencias.
+        {{ t('bookSelect.noMatches') }}
       </p>
 
       <button
@@ -149,7 +152,7 @@ async function confirmCreate() {
         class="mt-2 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
         @click="startCreate"
       >
-        + Añadir un libro nuevo
+        {{ t('bookSelect.addNew') }}
       </button>
     </div>
 
@@ -161,18 +164,18 @@ async function confirmCreate() {
       >
         {{ createError }}
       </p>
-      <input v-model="newTitle" type="text" :class="inputClass" placeholder="Título" />
-      <input v-model="newAuthor" type="text" :class="inputClass" placeholder="Autor" />
+      <input v-model="newTitle" type="text" :class="inputClass" :placeholder="t('bookSelect.titlePlaceholder')" />
+      <input v-model="newAuthor" type="text" :class="inputClass" :placeholder="t('bookSelect.authorPlaceholder')" />
       <div class="flex items-center gap-3">
         <img
           v-if="newCover.trim()"
           :src="newCover.trim()"
-          alt="Portada"
+          :alt="t('bookSelect.coverAlt')"
           class="h-16 w-11 flex-none rounded object-cover shadow-sm"
           referrerpolicy="no-referrer"
         />
         <div class="min-w-0 flex-1 space-y-2">
-          <input v-model="newCover" type="url" :class="inputClass" placeholder="URL de la portada (opcional)" />
+          <input v-model="newCover" type="url" :class="inputClass" :placeholder="t('bookSelect.coverUrlPlaceholder')" />
           <label
             class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
             :class="uploadingCover ? 'pointer-events-none opacity-60' : ''"
@@ -180,7 +183,7 @@ async function confirmCreate() {
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
             </svg>
-            {{ uploadingCover ? 'Subiendo…' : 'Subir portada' }}
+            {{ uploadingCover ? t('common.uploading') : t('bookSelect.uploadCover') }}
             <input type="file" accept="image/*" class="hidden" :disabled="uploadingCover" @change="onCoverFile" />
           </label>
         </div>
@@ -192,14 +195,14 @@ async function confirmCreate() {
           class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
           @click="confirmCreate"
         >
-          {{ creating ? 'Añadiendo…' : 'Añadir libro' }}
+          {{ creating ? t('bookSelect.adding') : t('bookSelect.addBook') }}
         </button>
         <button
           type="button"
           class="rounded-lg px-3 py-2 text-sm text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
           @click="mode = 'search'"
         >
-          Cancelar
+          {{ t('common.cancel') }}
         </button>
       </div>
     </div>

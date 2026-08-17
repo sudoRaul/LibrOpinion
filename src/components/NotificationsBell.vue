@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useNotifications, type AppNotification } from '../composables/useNotifications'
 import { useFollowRequests } from '../composables/useFollowRequests'
+import { timeAgo } from '../lib/format'
 
 const router = useRouter()
+const { t } = useI18n()
 const { items, unread, loading, loaded, load, markAllRead, markRead, applyRemoteDelete } =
   useNotifications()
 const { count: requestCount, loadCount: loadRequestCount, accept, reject } = useFollowRequests()
@@ -62,7 +65,7 @@ document.addEventListener('pointerdown', onDocPointer)
 onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocPointer))
 
 function actorName(n: AppNotification): string {
-  return n.actor?.display_name || n.actor?.username || 'Alguien'
+  return n.actor?.display_name || n.actor?.username || t('notifications.someone')
 }
 function actorInitials(n: AppNotification): string {
   return actorName(n)
@@ -73,24 +76,7 @@ function actorInitials(n: AppNotification): string {
     .toUpperCase()
 }
 function verb(n: AppNotification): string {
-  if (n.type === 'follow') return 'empezó a seguirte'
-  if (n.type === 'like') return 'le dio me gusta a tu cita'
-  if (n.type === 'comment') return 'comentó tu cita'
-  if (n.type === 'follow_request') return 'quiere seguirte'
-  if (n.type === 'follow_accepted') return 'aceptó tu solicitud'
-  return ''
-}
-
-function timeAgo(iso: string): string {
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (secs < 60) return 'ahora'
-  const mins = Math.floor(secs / 60)
-  if (mins < 60) return `hace ${mins} min`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `hace ${hours} h`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `hace ${days} d`
-  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  return t(`notifications.verb.${n.type}`)
 }
 
 async function onClickItem(n: AppNotification) {
@@ -110,7 +96,7 @@ async function onClickItem(n: AppNotification) {
     <!-- Campana -->
     <button
       class="relative flex h-9 w-9 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white"
-      aria-label="Notificaciones"
+      :aria-label="t('notifications.title')"
       @click="toggle"
     >
       <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -132,13 +118,13 @@ async function onClickItem(n: AppNotification) {
         class="fixed left-4 right-4 top-16 z-50 flex max-h-[70vh] flex-col rounded-2xl border border-stone-200 bg-white shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 dark:border-stone-800 dark:bg-stone-900"
       >
         <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 dark:border-stone-800">
-          <h3 class="font-display text-base font-semibold text-stone-900 dark:text-white">Notificaciones</h3>
+          <h3 class="font-display text-base font-semibold text-stone-900 dark:text-white">{{ t('notifications.title') }}</h3>
           <button
             v-if="unread > 0"
             class="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"
             @click="markAllRead"
           >
-            Marcar todas como leídas
+            {{ t('notifications.markAllRead') }}
           </button>
         </div>
 
@@ -150,7 +136,7 @@ async function onClickItem(n: AppNotification) {
             @click="goToRequests"
           >
             <span class="font-medium">
-              {{ requestCount }} solicitud{{ requestCount === 1 ? '' : 'es' }} de seguimiento
+              {{ t('notifications.requestsCount', requestCount, { named: { count: requestCount } }) }}
             </span>
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 18l6-6-6-6" />
@@ -164,7 +150,7 @@ async function onClickItem(n: AppNotification) {
 
           <!-- Vacío -->
           <p v-else-if="!items.length" class="p-8 text-center text-sm text-stone-500 dark:text-stone-400">
-            No tienes notificaciones todavía.
+            {{ t('notifications.empty') }}
           </p>
 
           <!-- Lista -->
@@ -203,14 +189,14 @@ async function onClickItem(n: AppNotification) {
                     class="rounded-lg bg-emerald-700 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                     @click="onAcceptRequest(n)"
                   >
-                    Aceptar
+                    {{ t('notifications.accept') }}
                   </button>
                   <button
                     :disabled="busy.has(n.id)"
                     class="rounded-lg border border-stone-300 px-3 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
                     @click="onRejectRequest(n)"
                   >
-                    Rechazar
+                    {{ t('notifications.reject') }}
                   </button>
                 </div>
               </div>

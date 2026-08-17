@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Book } from '../composables/useBooks'
 import { useQuotes } from '../composables/useQuotes'
 import { useFeed, type FeedQuote } from '../composables/useFeed'
 import BookSelect from './BookSelect.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: []; published: [quote: FeedQuote] }>()
@@ -40,16 +43,16 @@ async function submit() {
   error.value = null
 
   if (!book.value) {
-    error.value = 'Elige o crea un libro.'
+    error.value = t('compose.errChooseBook')
     return
   }
   const text = content.value.trim()
   if (text.length < 1) {
-    error.value = 'Escribe la cita.'
+    error.value = t('quoteForm.errWrite')
     return
   }
   if (text.length > MAX) {
-    error.value = `La cita no puede superar ${MAX} caracteres.`
+    error.value = t('quoteForm.errTooLong', { max: MAX })
     return
   }
 
@@ -57,7 +60,7 @@ async function submit() {
   if (page.value.trim() !== '') {
     const n = Number(page.value)
     if (!Number.isInteger(n) || n <= 0) {
-      error.value = 'La página debe ser un número entero positivo.'
+      error.value = t('quoteForm.errPageInvalid')
       return
     }
     pageNum = n
@@ -73,7 +76,7 @@ async function submit() {
   saving.value = false
 
   if (err || !quote) {
-    error.value = err ?? 'No se pudo publicar la cita.'
+    error.value = t('compose.errPublishFailed')
     return
   }
   prependQuote(quote)
@@ -94,14 +97,14 @@ async function submit() {
         class="my-8 w-full max-w-lg rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900"
         role="dialog"
         aria-modal="true"
-        aria-label="Publicar una cita"
+        :aria-label="t('compose.aria')"
       >
         <div class="mb-5 flex items-center justify-between">
-          <h2 class="font-display text-2xl font-semibold text-stone-900 dark:text-white">Nueva cita</h2>
+          <h2 class="font-display text-2xl font-semibold text-stone-900 dark:text-white">{{ t('compose.title') }}</h2>
           <button
             type="button"
             class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
-            aria-label="Cerrar"
+            :aria-label="t('common.close')"
             @click="emit('close')"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -122,14 +125,14 @@ async function submit() {
 
           <div>
             <label for="content" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              La cita
+              {{ t('quoteForm.contentLabel') }}
             </label>
             <textarea
               id="content"
               v-model="content"
               rows="4"
               :maxlength="MAX"
-              placeholder="“La frase que te marcó…”"
+              :placeholder="t('quoteForm.contentPlaceholder')"
               class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 font-quote text-lg text-stone-900 placeholder:font-sans placeholder:text-base placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
             ></textarea>
             <p class="mt-1 text-right text-xs text-stone-400">{{ content.length }} / {{ MAX }}</p>
@@ -137,7 +140,7 @@ async function submit() {
 
           <div class="w-32">
             <label for="page" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Página <span class="font-normal text-stone-400">(opc.)</span>
+              {{ t('quoteForm.pageLabel') }} <span class="font-normal text-stone-400">{{ t('common.optionalShort') }}</span>
             </label>
             <input
               id="page"
@@ -151,13 +154,13 @@ async function submit() {
 
           <div>
             <label for="note" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Tu nota <span class="font-normal text-stone-400">(opcional)</span>
+              {{ t('quoteForm.noteLabel') }} <span class="font-normal text-stone-400">{{ t('common.optional') }}</span>
             </label>
             <textarea
               id="note"
               v-model="note"
               rows="2"
-              placeholder="Por qué te llegó, qué te recordó…"
+              :placeholder="t('quoteForm.notePlaceholder')"
               class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
             ></textarea>
           </div>
@@ -168,14 +171,14 @@ async function submit() {
               class="rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
               @click="emit('close')"
             >
-              Cancelar
+              {{ t('common.cancel') }}
             </button>
             <button
               type="submit"
               :disabled="saving"
               class="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             >
-              {{ saving ? 'Publicando…' : 'Publicar' }}
+              {{ saving ? t('compose.submitting') : t('compose.submit') }}
             </button>
           </div>
         </form>

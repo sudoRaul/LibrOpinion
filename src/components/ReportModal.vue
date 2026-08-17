@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useReport, REPORT_REASONS } from '../composables/useReport'
 
+const { t } = useI18n()
 const { open, target, close, submit } = useReport()
 
 const reason = ref<string>(REPORT_REASONS[0])
@@ -10,11 +12,9 @@ const sending = ref(false)
 const error = ref<string | null>(null)
 const done = ref(false)
 
-const targetLabel: Record<string, string> = {
-  user: 'este usuario',
-  quote: 'esta cita',
-  comment: 'este comentario',
-}
+const targetText = computed(() => t('report.target' + (
+  target.value?.type === 'quote' ? 'Quote' : target.value?.type === 'comment' ? 'Comment' : 'User'
+)))
 
 // Reinicia el formulario cada vez que se abre.
 watch(open, (isOpen) => {
@@ -33,7 +33,7 @@ async function onSubmit() {
   const { error: err } = await submit(reason.value, detail.value)
   sending.value = false
   if (err) {
-    error.value = err
+    error.value = t(err)
     return
   }
   done.value = true
@@ -52,16 +52,16 @@ async function onSubmit() {
         class="my-8 w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-800 dark:bg-stone-900"
         role="dialog"
         aria-modal="true"
-        aria-label="Reportar"
+        :aria-label="t('report.title')"
       >
         <div class="mb-5 flex items-center justify-between">
           <h2 class="font-display text-xl font-semibold text-stone-900 dark:text-white">
-            {{ done ? 'Reporte enviado' : 'Reportar' }}
+            {{ done ? t('report.sent') : t('report.title') }}
           </h2>
           <button
             type="button"
             class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
-            aria-label="Cerrar"
+            :aria-label="t('common.close')"
             @click="close"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -78,20 +78,21 @@ async function onSubmit() {
             </svg>
           </div>
           <p class="mt-4 text-stone-600 dark:text-stone-300">
-            Gracias. Hemos recibido tu reporte y lo revisaremos.
+            {{ t('report.successBody') }}
           </p>
           <button
             class="mt-5 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
             @click="close"
           >
-            Cerrar
+            {{ t('common.close') }}
           </button>
         </div>
 
         <!-- Formulario -->
         <form v-else class="space-y-4" @submit.prevent="onSubmit">
           <p class="text-sm text-stone-500 dark:text-stone-400">
-            Estás reportando {{ targetLabel[target?.type ?? 'user'] }}<template v-if="target?.label"> (<span class="font-medium text-stone-700 dark:text-stone-300">{{ target.label }}</span>)</template>. Cuéntanos el motivo.
+            {{ t('report.intro', { target: targetText }) }}
+            <template v-if="target?.label"> (<span class="font-medium text-stone-700 dark:text-stone-300">{{ target.label }}</span>)</template>
           </p>
 
           <p
@@ -109,20 +110,20 @@ async function onSubmit() {
               :class="reason === r ? 'border-emerald-500 bg-emerald-50 text-stone-900 dark:border-emerald-600 dark:bg-emerald-950/30 dark:text-white' : 'border-stone-300 text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800/50'"
             >
               <input v-model="reason" type="radio" :value="r" class="accent-emerald-600" />
-              {{ r }}
+              {{ t('report.reasons.' + r) }}
             </label>
           </fieldset>
 
           <div>
             <label for="report-detail" class="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Detalle <span class="font-normal text-stone-400">(opcional)</span>
+              {{ t('report.detailLabel') }} <span class="font-normal text-stone-400">{{ t('common.optional') }}</span>
             </label>
             <textarea
               id="report-detail"
               v-model="detail"
               rows="3"
               maxlength="1000"
-              placeholder="Añade cualquier contexto que ayude a revisarlo…"
+              :placeholder="t('report.detailPlaceholder')"
               class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
             ></textarea>
           </div>
@@ -133,14 +134,14 @@ async function onSubmit() {
               class="rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
               @click="close"
             >
-              Cancelar
+              {{ t('common.cancel') }}
             </button>
             <button
               type="submit"
               :disabled="sending"
               class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {{ sending ? 'Enviando…' : 'Enviar reporte' }}
+              {{ sending ? t('report.submitting') : t('report.submit') }}
             </button>
           </div>
         </form>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { FeedQuote } from '../composables/useFeed'
 import { useLikes } from '../composables/useLikes'
 import { useComments, type Comment } from '../composables/useComments'
@@ -19,6 +20,7 @@ const emit = defineEmits<{ edit: [quote: FeedQuote]; deleted: [id: string] }>()
 // En el permalink (`linkToDetail=false`) la tarjeta ya ES la cita: no enlaza a sí misma.
 const showDetailLink = computed(() => props.linkToDetail)
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const likes = useLikes()
 const comments = useComments()
@@ -51,7 +53,7 @@ async function onDelete() {
   deleting.value = false
   if (error) {
     // Dejamos el menú abierto para que el error sea visible.
-    deleteError.value = error
+    deleteError.value = t('quote.menu.deleteError')
     return
   }
   emit('deleted', props.quote.id)
@@ -84,13 +86,13 @@ async function onShare() {
   if (sharing.value) return
   shareError.value = null
   sharing.value = true
-  const { ok, error } = await shareQuote(props.quote)
+  const { ok } = await shareQuote(props.quote)
   sharing.value = false
-  if (!ok) shareError.value = error ?? 'No se pudo compartir.'
+  if (!ok) shareError.value = t('quote.shareError')
 }
 
 const displayName = computed(
-  () => props.quote.author?.display_name || props.quote.author?.username || 'Lector',
+  () => props.quote.author?.display_name || props.quote.author?.username || t('quote.readerFallback'),
 )
 const handle = computed(() => props.quote.author?.username ?? null)
 const initials = (name: string) =>
@@ -122,7 +124,7 @@ async function submitComment() {
   const { error } = await comments.add(props.quote.id, text)
   adding.value = false
   if (error) {
-    commentError.value = error
+    commentError.value = t('quote.comments.error')
     return
   }
   newComment.value = ''
@@ -194,7 +196,7 @@ function onReportComment(c: Comment) {
       <div v-if="isOwn" ref="menuRoot" class="relative flex-none" @click.stop>
         <button
           class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-          aria-label="Opciones de la cita"
+          :aria-label="t('quote.menu.options')"
           @click="menuOpen = !menuOpen"
         >
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -214,7 +216,7 @@ function onReportComment(c: Comment) {
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
               </svg>
-              Editar
+              {{ t('quote.menu.edit') }}
             </button>
             <button
               class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
@@ -223,25 +225,25 @@ function onReportComment(c: Comment) {
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
               </svg>
-              Eliminar
+              {{ t('quote.menu.delete') }}
             </button>
           </template>
           <div v-else class="p-3">
-            <p class="text-sm text-stone-700 dark:text-stone-200">¿Eliminar esta cita?</p>
+            <p class="text-sm text-stone-700 dark:text-stone-200">{{ t('quote.menu.confirmDelete') }}</p>
             <p v-if="deleteError" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ deleteError }}</p>
             <div class="mt-3 flex justify-end gap-2">
               <button
                 class="rounded-lg px-3 py-1.5 text-sm text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white"
                 @click="confirmingDelete = false"
               >
-                Cancelar
+                {{ t('quote.menu.cancel') }}
               </button>
               <button
                 :disabled="deleting"
                 class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
                 @click="onDelete"
               >
-                {{ deleting ? 'Eliminando…' : 'Eliminar' }}
+                {{ deleting ? t('quote.menu.deleting') : t('quote.menu.delete') }}
               </button>
             </div>
           </div>
@@ -252,7 +254,7 @@ function onReportComment(c: Comment) {
       <div v-else-if="handle && !isGuest" ref="menuRoot" class="relative flex-none" @click.stop>
         <button
           class="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-          aria-label="Opciones de la cita"
+          :aria-label="t('quote.menu.options')"
           @click="menuOpen = !menuOpen"
         >
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -271,7 +273,7 @@ function onReportComment(c: Comment) {
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
               <path d="M4 22v-7" />
             </svg>
-            Reportar cita
+            {{ t('quote.menu.reportQuote') }}
           </button>
         </div>
       </div>
@@ -343,7 +345,7 @@ function onReportComment(c: Comment) {
         >
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
-        <span :class="like.count ? '' : 'text-stone-400'">{{ like.count || 'Me gusta' }}</span>
+        <span :class="like.count ? '' : 'text-stone-400'">{{ like.count || t('quote.actions.like') }}</span>
       </button>
 
       <button
@@ -356,15 +358,15 @@ function onReportComment(c: Comment) {
           <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8A8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z" />
         </svg>
         <span :class="comments.getCount(quote.id) ? '' : 'text-stone-400'">
-          {{ comments.getCount(quote.id) || 'Comentar' }}
+          {{ comments.getCount(quote.id) || t('quote.actions.comment') }}
         </span>
       </button>
 
       <button
         class="ml-auto inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-emerald-700 disabled:opacity-60 dark:text-stone-400 dark:hover:text-emerald-400"
         :disabled="sharing"
-        :aria-label="`Compartir la cita como imagen`"
-        title="Compartir como imagen"
+        :aria-label="t('quote.actions.shareAria')"
+        :title="t('quote.actions.shareTitle')"
         @click="onShare"
       >
         <svg v-if="!sharing" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -374,7 +376,7 @@ function onReportComment(c: Comment) {
         <svg v-else class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12a9 9 0 1 1-6.2-8.5" stroke-linecap="round" />
         </svg>
-        <span class="hidden sm:inline">Compartir</span>
+        <span class="hidden sm:inline">{{ t('quote.actions.share') }}</span>
       </button>
     </div>
 
@@ -388,7 +390,7 @@ function onReportComment(c: Comment) {
           <img
             v-if="auth.profile?.avatar_url"
             :src="auth.profile.avatar_url"
-            alt="Tú"
+            :alt="t('quote.comments.you')"
             class="h-8 w-8 rounded-full object-cover"
             referrerpolicy="no-referrer"
           />
@@ -399,7 +401,7 @@ function onReportComment(c: Comment) {
             v-model="newComment"
             type="text"
             maxlength="1000"
-            placeholder="Añade un comentario…"
+            :placeholder="t('quote.comments.placeholder')"
             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
           />
           <p v-if="commentError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ commentError }}</p>
@@ -409,7 +411,7 @@ function onReportComment(c: Comment) {
           :disabled="adding || !newComment.trim()"
           class="flex-none rounded-xl bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
         >
-          {{ adding ? '…' : 'Enviar' }}
+          {{ adding ? '…' : t('quote.comments.send') }}
         </button>
       </form>
 
@@ -456,14 +458,14 @@ function onReportComment(c: Comment) {
                 class="hover:text-red-500"
                 @click="comments.remove(quote.id, c.id)"
               >
-                Eliminar
+                {{ t('quote.comments.delete') }}
               </button>
               <button
                 v-else
                 class="hover:text-stone-600 dark:hover:text-stone-300"
                 @click="onReportComment(c)"
               >
-                Reportar
+                {{ t('quote.comments.report') }}
               </button>
             </div>
           </div>

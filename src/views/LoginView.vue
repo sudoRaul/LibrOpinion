@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import AuthShell from '../components/AuthShell.vue'
 import AppTextField from '../components/AppTextField.vue'
@@ -8,6 +9,7 @@ import GoogleButton from '../components/GoogleButton.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const email = ref('')
 const password = ref('')
@@ -41,31 +43,31 @@ async function onGoogle() {
 </script>
 
 <template>
-  <AuthShell title="Bienvenido de nuevo" subtitle="Entra para ver las citas de quienes sigues.">
+  <AuthShell :title="t('auth.login.title')" :subtitle="t('auth.login.subtitle')">
     <form class="space-y-4" @submit.prevent="onSubmit">
       <p
         v-if="error"
         class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ error }}
+        {{ t(error) }}
       </p>
 
       <AppTextField
         id="email"
         v-model="email"
-        label="Email"
+        :label="t('auth.fields.emailLabel')"
         type="email"
         autocomplete="email"
-        placeholder="tu@correo.com"
+        :placeholder="t('auth.fields.emailPlaceholder')"
         :disabled="loading"
       />
       <AppTextField
         id="password"
         v-model="password"
-        label="Contraseña"
+        :label="t('auth.fields.passwordLabel')"
         type="password"
         autocomplete="current-password"
-        placeholder="••••••••"
+        :placeholder="t('auth.fields.passwordPlaceholder')"
         :disabled="loading"
       />
 
@@ -74,22 +76,22 @@ async function onGoogle() {
         :disabled="loading"
         class="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
       >
-        {{ loading ? 'Entrando…' : 'Iniciar sesión' }}
+        {{ loading ? t('auth.login.submitting') : t('auth.login.submit') }}
       </button>
     </form>
 
     <div class="my-6 flex items-center gap-3 text-xs text-stone-400">
       <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
-      o
+      {{ t('common.or') }}
       <span class="h-px flex-1 bg-stone-200 dark:bg-stone-700"></span>
     </div>
 
-    <GoogleButton :loading="googleLoading" @click="onGoogle" />
+    <GoogleButton :loading="googleLoading" :label="t('auth.google')" @click="onGoogle" />
 
     <template #footer>
-      ¿No tienes cuenta?
+      {{ t('auth.login.noAccount') }}
       <RouterLink to="/signup" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
-        Crear una cuenta
+        {{ t('auth.login.createAccount') }}
       </RouterLink>
     </template>
   </AuthShell>
