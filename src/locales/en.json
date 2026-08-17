@@ -373,5 +373,11 @@
     "toDark": "Switch to dark mode",
     "light": "Light mode",
     "dark": "Dark mode"
+  },
+  "settings": {
+    "title": "Settings",
+    "languageLabel": "Language",
+    "languageDesc": "It will apply across all your devices.",
+    "open": "Settings"
   }
 }

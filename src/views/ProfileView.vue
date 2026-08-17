@@ -7,6 +7,7 @@ import { useReport } from '../composables/useReport'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import ProfileEditModal from '../components/ProfileEditModal.vue'
+import SettingsModal from '../components/SettingsModal.vue'
 import QuoteEditModal from '../components/QuoteEditModal.vue'
 import FollowListModal from '../components/FollowListModal.vue'
 import NotificationsBell from '../components/NotificationsBell.vue'
@@ -102,6 +103,7 @@ const initials = computed(() =>
 )
 
 const editing = ref(false)
+const settingsOpen = ref(false)
 const editingQuote = ref<FeedQuote | null>(null)
 
 // Modal de listas de seguidores / seguidos.
@@ -343,13 +345,27 @@ function onProfileUpdated(newUsername: string) {
               </div>
             </div>
 
-            <button
-              v-else
-              class="flex-none rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
-              @click="editing = true"
-            >
-              {{ t('profile.editProfile') }}
-            </button>
+            <div v-else class="flex flex-none items-center gap-2">
+              <button
+                type="button"
+                class="rounded-xl border border-stone-300 p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-white"
+                :aria-label="t('settings.open')"
+                :title="t('settings.open')"
+                @click="settingsOpen = true"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                @click="editing = true"
+              >
+                {{ t('profile.editProfile') }}
+              </button>
+            </div>
           </div>
 
           <p v-if="profile.bio" class="mt-4 text-stone-600 dark:text-stone-300">{{ profile.bio }}</p>
@@ -455,6 +471,7 @@ function onProfileUpdated(newUsername: string) {
           @close="editing = false"
           @updated="onProfileUpdated"
         />
+        <SettingsModal :open="settingsOpen" @close="settingsOpen = false" />
         <QuoteEditModal
           :open="editingQuote !== null"
           :quote="editingQuote"

@@ -373,5 +373,11 @@
     "toDark": "Cambiar a modo oscuro",
     "light": "Modo claro",
     "dark": "Modo oscuro"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "languageLabel": "Idioma",
+    "languageDesc": "Se aplicará en todos tus dispositivos.",
+    "open": "Ajustes"
   }
 }
