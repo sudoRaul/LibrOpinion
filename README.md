@@ -51,7 +51,7 @@ Built as a full-stack project with **Vue 3 + TypeScript** on the front and **Sup
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/share-card.png" alt="Share a quote as an image" /><p align="center"><em>Share a quote as an image</em></p></td>
-    <td width="50%"><img src="docs/screenshots/dark-mode.png" alt="Dark mode" /><p align="center"><em>Dark mode, everywhere</em></p></td>
+    <td width="50%"><img src="docs/screenshots/light-mode.png" alt="Light mode" /><p align="center"><em>Light mode, too</em></p></td>
   </tr>
 </table>
 
@@ -90,6 +90,11 @@ Built as a full-stack project with **Vue 3 + TypeScript** on the front and **Sup
 - A protected, admin-only **moderation panel** to review reports and **ban / unban** with a reason.
 - Banning **hides the user's content, blocks their writes *and* their reads** (RLS), shows them a “Suspended account” screen live, and **emails them the reason** — with a friendly “account restored” email on unban.
 
+### 🌍 Multi-language
+- Fully **bilingual UI (English & Spanish)** — every screen, form placeholder, error message and relative date is translated, with no hardcoded strings.
+- **Auto-detects** the browser language on first visit (Spanish browsers → Spanish, everything else → English) and lets you switch anytime from an in-app **Settings** dialog.
+- Your choice is **saved to your profile**, so it follows you across devices.
+
 ### 🎨 Craft
 - Global **dark mode** (system-aware, no flash-of-unstyled-content), an animated **landing page** (“paper & ink” theme, `prefers-reduced-motion` aware), and a clean, responsive UI throughout.
 
@@ -104,6 +109,7 @@ Built as a full-stack project with **Vue 3 + TypeScript** on the front and **Sup
 | **Styling** | Tailwind CSS 4 (`@tailwindcss/vite`) |
 | **Routing** | Vue Router |
 | **State** | Pinia (auth session only) · composables for everything else |
+| **i18n** | vue-i18n (English / Spanish, browser detection, profile-persisted) |
 | **Backend** | Supabase — PostgreSQL, Auth, Row-Level Security, Realtime, Storage |
 | **Serverless** | Supabase Edge Functions (Deno) + **Resend** for transactional email |
 | **Edge/OG** | Netlify Edge Function for Open Graph tags |
@@ -231,6 +237,7 @@ netlify/
 - [x] Public / private accounts & follow requests
 - [x] Blocking, reports, bans, admin panel & email notifications
 - [x] Share-as-image & public Open Graph permalinks
+- [x] Bilingual UI (English / Spanish) with in-app settings
 - [ ] Verify OG previews on the live Netlify deployment
 - [ ] Verified sending domain (send moderation emails to any user)
 - [ ] Custom domain (Hostinger)
