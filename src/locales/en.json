@@ -319,6 +319,8 @@
     "submitting": "Sending…",
     "successBody": "Thanks. We've received your report and will review it.",
     "errSend": "Couldn't send the report. Try again.",
+    "errDuplicate": "You've already reported this.",
+    "errRateLimit": "You've sent too many reports. Try again later.",
     "reasons": {
       "harassment": "Insults or harassment",
       "spam": "Spam",

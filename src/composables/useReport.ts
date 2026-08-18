@@ -47,7 +47,12 @@ async function submit(reason: string, detail: string): Promise<{ error: string |
     reason,
     detail: detail.trim() || null,
   })
-  if (error) return { error: 'report.errSend' }
+  if (error) {
+    // Tokens del trigger de rate-limit (fix M-4).
+    if (error.message.includes('report_duplicate')) return { error: 'report.errDuplicate' }
+    if (error.message.includes('report_rate_limit')) return { error: 'report.errRateLimit' }
+    return { error: 'report.errSend' }
+  }
   return { error: null }
 }
 

@@ -175,7 +175,6 @@ async function confirmCreate() {
           referrerpolicy="no-referrer"
         />
         <div class="min-w-0 flex-1 space-y-2">
-          <input v-model="newCover" type="url" :class="inputClass" :placeholder="t('bookSelect.coverUrlPlaceholder')" />
           <label
             class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
             :class="uploadingCover ? 'pointer-events-none opacity-60' : ''"

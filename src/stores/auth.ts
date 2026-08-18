@@ -37,17 +37,15 @@ export const useAuthStore = defineStore('auth', {
         this.profile = null
         return
       }
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', this.user.id)
-        .single()
+      // Vía RPC `current_profile` (security definer): devuelve MI fila completa,
+      // incluidas las columnas que la tabla oculta al resto (is_admin, ban_reason…),
+      // necesarias para el guard de admin y la pantalla "Cuenta suspendida".
+      const { data, error } = await supabase.rpc('current_profile')
 
-      // PGRST116 = no hay fila; dejamos profile en null (el trigger debería haberla creado).
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error cargando el profile:', error.message)
       }
-      this.profile = data ?? null
+      this.profile = data?.[0] ?? null
       // La preferencia de idioma del perfil manda sobre la detección del navegador.
       if (this.profile?.locale) applyLocale(this.profile.locale)
     },

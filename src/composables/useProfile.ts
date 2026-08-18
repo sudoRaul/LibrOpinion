@@ -7,10 +7,19 @@ import { useLikes } from './useLikes'
 import { useComments } from './useComments'
 import { useFollowRequests } from './useFollowRequests'
 
-export type Profile = Database['public']['Tables']['profiles']['Row']
+// La app nunca necesita las columnas de moderación de OTROS perfiles; además la
+// BD las oculta a nivel de columna (fix M-2). El propio usuario las lee por el
+// RPC `current_profile` en el store de auth.
+export type Profile = Omit<
+  Database['public']['Tables']['profiles']['Row'],
+  'is_admin' | 'ban_reason' | 'banned_at'
+>
 export type FollowState = 'none' | 'pending' | 'accepted'
 
 const PAGE_SIZE = 20
+// Columnas públicas de un perfil (las que concede la BD tras el fix M-2).
+const PROFILE_COLUMNS =
+  'id, username, display_name, bio, avatar_url, created_at, updated_at, is_private, is_banned, locale'
 
 // Perfil actualmente en pantalla, para que Realtime pueda refrescarlo en vivo.
 let activeProfileId: string | null = null
@@ -71,7 +80,7 @@ export function useProfile() {
 
     const { data: prof, error: profErr } = await supabase
       .from('profiles')
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .eq('username', username)
       .maybeSingle()
 
@@ -97,10 +106,10 @@ export function useProfile() {
     // Contadores (solo aceptados), citas (RLS las oculta si no puedo verlas), mi
     // estado de seguimiento (none/pending/accepted) y si ESTA persona me ha
     // solicitado seguirme, en paralelo.
-    const [followersRes, followingRes, quotesRes, myFollowRes, incomingRes, iBlockedRes, blockedByRes] =
+    const [countsRes, quotesRes, myFollowRes, incomingRes, iBlockedRes, blockedByRes] =
       await Promise.all([
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', prof.id).eq('status', 'accepted'),
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', prof.id).eq('status', 'accepted'),
+      // Contadores públicos vía RPC (la RLS de follows ya no expone el grafo).
+      supabase.rpc('follow_counts', { p_target: prof.id }),
       supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false }).limit(PAGE_SIZE),
       auth.user && auth.user.id !== prof.id
         ? supabase.from('follows').select('status').eq('follower_id', auth.user.id).eq('following_id', prof.id).maybeSingle()
@@ -116,8 +125,9 @@ export function useProfile() {
         : Promise.resolve({ data: null }),
     ])
 
-    followers.value = followersRes.count ?? 0
-    following.value = followingRes.count ?? 0
+    const counts = countsRes.data?.[0]
+    followers.value = Number(counts?.followers ?? 0)
+    following.value = Number(counts?.following ?? 0)
     quotes.value = quotesRes.data ?? []
     quotesHasMore.value = (quotesRes.data?.length ?? 0) === PAGE_SIZE
     const myFollow = myFollowRes.data as { status?: string } | null
@@ -162,13 +172,10 @@ export function useProfile() {
   /** Recuenta seguidores/seguidos aceptados del perfil (tras cambios en las listas). */
   async function refreshCounts() {
     if (!profile.value) return
-    const id = profile.value.id
-    const [followersRes, followingRes] = await Promise.all([
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id).eq('status', 'accepted'),
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id).eq('status', 'accepted'),
-    ])
-    followers.value = followersRes.count ?? 0
-    following.value = followingRes.count ?? 0
+    const { data } = await supabase.rpc('follow_counts', { p_target: profile.value.id })
+    const counts = data?.[0]
+    followers.value = Number(counts?.followers ?? 0)
+    following.value = Number(counts?.following ?? 0)
   }
 
   /**

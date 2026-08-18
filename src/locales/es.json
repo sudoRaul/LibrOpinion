@@ -319,6 +319,8 @@
     "submitting": "Enviando…",
     "successBody": "Gracias. Hemos recibido tu reporte y lo revisaremos.",
     "errSend": "No se pudo enviar el reporte. Inténtalo de nuevo.",
+    "errDuplicate": "Ya has reportado esto.",
+    "errRateLimit": "Has enviado demasiados reportes. Inténtalo más tarde.",
     "reasons": {
       "harassment": "Insultos o acoso",
       "spam": "Spam",

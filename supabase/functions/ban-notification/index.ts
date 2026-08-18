@@ -25,9 +25,23 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const FROM_EMAIL = Deno.env.get('BAN_FROM_EMAIL') ?? 'librOpinion <onboarding@resend.dev>'
 // A dónde llegan las respuestas del usuario (tu correo de admin).
 const REPLY_TO = Deno.env.get('ADMIN_EMAIL') ?? null
+// Secreto compartido con el Database Webhook. Sin él, la función es un endpoint
+// abierto y cualquiera podría disparar correos de "suspensión" falsos.
+const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET') ?? ''
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+// Comparación en tiempo constante (evita fugar el secreto por timing).
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder()
+  const ab = enc.encode(a)
+  const bb = enc.encode(b)
+  if (ab.length !== bb.length) return false
+  let diff = 0
+  for (let i = 0; i < ab.length; i++) diff |= ab[i] ^ bb[i]
+  return diff === 0
 }
 
 // Email del usuario (vive en auth.users, no en profiles): lo pedimos a la Admin API.
@@ -85,6 +99,13 @@ function restoreEmail(r: ProfileRecord): { subject: string; html: string } {
 
 Deno.serve(async (req) => {
   try {
+    // Autenticación del webhook: solo el Database Webhook (que envía el header
+    // secreto) puede invocar esta función. Falla cerrada si no hay secreto.
+    const provided = req.headers.get('x-webhook-secret') ?? ''
+    if (!WEBHOOK_SECRET || !timingSafeEqual(provided, WEBHOOK_SECRET)) {
+      return new Response('unauthorized', { status: 401 })
+    }
+
     const payload = (await req.json()) as WebhookPayload
     const r = payload.record
     const old = payload.old_record

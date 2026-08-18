@@ -22,6 +22,9 @@ dist-ssr
 # Documentación/roadmap del agente (fuera del repo por decisión del proyecto)
 CLAUDE.md
 
+# Informe de seguridad / pentest (contiene detalles de explotación; NO versionar)
+SECURITY-AUDIT.md
+
 # Editor directories and files
 .vscode/
 .idea

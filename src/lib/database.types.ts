@@ -420,6 +420,45 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_admin: boolean
+          is_banned: boolean
+          is_private: boolean
+          locale: string | null
+          updated_at: string
+          username: string | null
+        }[]
+      }
+      follow_counts: {
+        Args: {
+          p_target: string
+        }
+        Returns: {
+          followers: number
+          following: number
+        }[]
+      }
+      follow_list: {
+        Args: {
+          p_target: string
+          p_mode: string
+        }
+        Returns: {
+          id: string
+          username: string | null
+          display_name: string | null
+          avatar_url: string | null
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

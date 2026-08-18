@@ -29,24 +29,13 @@ export function useFollowList() {
     error.value = null
     items.value = []
 
-    // Seguidores = quien me sigue (following_id = userId), embebiendo su perfil.
-    // Seguidos = a quién sigo (follower_id = userId), embebiendo el perfil seguido.
-    const query =
-      mode === 'followers'
-        ? supabase
-            .from('follows')
-            .select('profile:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url)')
-            .eq('following_id', userId)
-            .eq('status', 'accepted')
-            .order('created_at', { ascending: false })
-        : supabase
-            .from('follows')
-            .select('profile:profiles!follows_following_id_fkey(id, username, display_name, avatar_url)')
-            .eq('follower_id', userId)
-            .eq('status', 'accepted')
-            .order('created_at', { ascending: false })
-
-    const { data, error: listErr } = await query
+    // Listas vía RPC `follow_list`: la RLS de follows ya no expone el grafo, y el
+    // RPC aplica la puerta de visibilidad (`can_view_author`) en el servidor, así
+    // que las listas de cuentas privadas que no puedo ver vuelven vacías.
+    const { data, error: listErr } = await supabase.rpc('follow_list', {
+      p_target: userId,
+      p_mode: mode,
+    })
 
     if (listErr) {
       error.value = 'No se pudo cargar la lista.'
@@ -54,9 +43,7 @@ export function useFollowList() {
       return
     }
 
-    const profiles = (data ?? [])
-      .map((row) => row.profile)
-      .filter((p): p is NonNullable<typeof p> => p != null)
+    const profiles = data ?? []
 
     // ¿A cuáles de estas personas sigo yo? (para el botón de cada fila).
     let followedByMe = new Set<string>()
