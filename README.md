@@ -158,77 +158,6 @@ flowchart LR
 
 ---
 
-## 🛠️ Getting started
-
-### Prerequisites
-- Node.js 20+
-- A [Supabase](https://supabase.com) project
-- (Optional) a [Resend](https://resend.com) account for moderation emails
-
-### 1. Clone & install
-```bash
-git clone https://github.com/sudoRaul/libropinion.git
-cd libropinion
-npm install
-```
-
-### 2. Environment variables
-Copy the example and fill in your Supabase credentials:
-```bash
-cp .env.example .env
-```
-```env
-VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<your-publishable-anon-key>
-```
-
-### 3. Database
-The full schema, RLS policies, triggers and functions are versioned as migrations in [`supabase/migrations`](supabase/migrations). Apply them to your project (via the Supabase SQL Editor or the CLI):
-```bash
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push
-```
-
-### 4. Run
-```bash
-npm run dev      # start the dev server
-npm run build    # type-check (vue-tsc) + production build
-npm run preview  # preview the production build
-```
-
-### 5. (Optional) Edge Functions & email
-The moderation emails use Supabase Edge Functions + Resend:
-```bash
-npx supabase secrets set RESEND_API_KEY=... ADMIN_EMAIL=...
-npx supabase functions deploy report-notification --no-verify-jwt
-npx supabase functions deploy ban-notification --no-verify-jwt
-```
-Then wire up **Database Webhooks** (Integrations → Webhooks) on the `reports` (INSERT) and `profiles` (UPDATE) tables pointing to the respective functions.
-
----
-
-## 📂 Project structure
-
-```
-src/
-├── lib/            # Supabase client (typed) + generated DB types
-├── stores/         # Pinia — auth session only
-├── composables/    # feed, profile, likes, comments, notifications, realtime,
-│                   #   moderation, sharing, storage, theme… (one concern each)
-├── router/         # routes + auth/guest/onboarding/admin guards
-├── views/          # Landing, Feed, Profile, Quote, Admin, auth screens…
-└── components/     # QuoteCard, composer, modals, notifications bell…
-
-supabase/
-├── migrations/     # the source of truth for the schema, RLS & functions
-└── functions/      # Deno Edge Functions (Resend emails)
-
-netlify/
-└── edge-functions/ # Open Graph / Twitter card injection for /q/:id
-```
-
----
-
 ## 🗺️ Roadmap
 
 - [x] Auth (email + Google), feed, quotes, profiles, follows
@@ -250,7 +179,7 @@ netlify/
 
 - GitHub: [@sudoRaul](https://github.com/sudoRaul)
 - Email: raul.rodriguez@infiniton.es
-- LinkedIn: _add your profile link here_
+- LinkedIn: [Raúl Rodríguez Fernández](https://www.linkedin.com/in/ra%C3%BAl-rodr%C3%ADguez-fern%C3%A1ndez-393b05339/)
 
 ---
 
