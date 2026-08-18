@@ -178,7 +178,7 @@ flowchart LR
 **Raúl** — Full-stack developer
 
 - GitHub: [@sudoRaul](https://github.com/sudoRaul)
-- Email: raul.rodriguez@infiniton.es
+- Email: rrodfer05@gmail.com
 - LinkedIn: [Raúl Rodríguez Fernández](https://www.linkedin.com/in/ra%C3%BAl-rodr%C3%ADguez-fern%C3%A1ndez-393b05339/)
 
 ---
