@@ -17,7 +17,8 @@
       "haveAccount": "Already have an account?",
       "login": "Sign in",
       "confirmBody": "Almost there. If {email} is a new account, we've sent you a link to confirm it. If you already had an account, check your inbox or sign in.",
-      "goLogin": "Go to sign in"
+      "goLogin": "Go to sign in",
+      "consent": "I have read and accept the {terms} and the {privacy}."
     },
     "onboarding": {
       "title": "Choose your username",
@@ -44,7 +45,8 @@
       "rateLimit": "Too many attempts. Try again in a little while.",
       "usernameTaken": "That username is already taken.",
       "usernameFormat": "Use between 3 and 30 characters: letters, numbers and underscore (_) only.",
-      "noSession": "There is no active session."
+      "noSession": "There is no active session.",
+      "consentRequired": "You must accept the Terms and the Privacy Policy."
     }
   },
   "landing": {
@@ -62,9 +64,21 @@
       "ctaSecondary": "I already have an account"
     },
     "heroQuotes": [
-      { "text": "It was the best of times, it was the worst of times.", "book": "A Tale of Two Cities", "author": "Charles Dickens" },
-      { "text": "There is no friend as loyal as a book.", "book": "On Reading", "author": "Ernest Hemingway" },
-      { "text": "He who reads much and walks much, sees much and knows much.", "book": "Don Quixote", "author": "Miguel de Cervantes" }
+      {
+        "text": "It was the best of times, it was the worst of times.",
+        "book": "A Tale of Two Cities",
+        "author": "Charles Dickens"
+      },
+      {
+        "text": "There is no friend as loyal as a book.",
+        "book": "On Reading",
+        "author": "Ernest Hemingway"
+      },
+      {
+        "text": "He who reads much and walks much, sees much and knows much.",
+        "book": "Don Quixote",
+        "author": "Miguel de Cervantes"
+      }
     ],
     "ribbon": [
       "A reader lives a thousand lives before dying.",
@@ -78,9 +92,18 @@
       "heading": "Your library of favorite lines",
       "subheading": "Everything you underline, in one place, and shared with whomever you like.",
       "items": [
-        { "title": "Quote and comment", "body": "Jot down the line that struck you, its page and why it hit home. Your library of highlights, organized." },
-        { "title": "Follow readers", "body": "Your feed fills up with quotes from the people you follow. Discover through the eyes of others." },
-        { "title": "Find your next read", "body": "Every quote is a door to a new book. Let the lines guide you to the next one." }
+        {
+          "title": "Quote and comment",
+          "body": "Jot down the line that struck you, its page and why it hit home. Your library of highlights, organized."
+        },
+        {
+          "title": "Follow readers",
+          "body": "Your feed fills up with quotes from the people you follow. Discover through the eyes of others."
+        },
+        {
+          "title": "Find your next read",
+          "body": "Every quote is a door to a new book. Let the lines guide you to the next one."
+        }
       ]
     },
     "finalCta": {
@@ -381,5 +404,18 @@
     "languageLabel": "Language",
     "languageDesc": "It will apply across all your devices.",
     "open": "Settings"
+  },
+  "legal": {
+    "back": "Back to home",
+    "updated": "Last updated",
+    "privacy": {
+      "linkLabel": "Privacy Policy"
+    },
+    "terms": {
+      "linkLabel": "Terms of Use"
+    },
+    "notice": {
+      "linkLabel": "Legal Notice"
+    }
   }
 }

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import ThemeToggle from './ThemeToggle.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 defineProps<{ title: string; subtitle?: string }>()
 </script>
@@ -45,6 +48,13 @@ defineProps<{ title: string; subtitle?: string }>()
         <div v-if="$slots.footer" class="mt-6 text-center text-sm text-stone-600 dark:text-stone-400">
           <slot name="footer" />
         </div>
+
+        <!-- Enlaces legales -->
+        <nav class="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
+          <RouterLink to="/privacidad" class="transition-colors hover:text-stone-600 dark:hover:text-stone-300">{{ t('legal.privacy.linkLabel') }}</RouterLink>
+          <RouterLink to="/terminos" class="transition-colors hover:text-stone-600 dark:hover:text-stone-300">{{ t('legal.terms.linkLabel') }}</RouterLink>
+          <RouterLink to="/aviso-legal" class="transition-colors hover:text-stone-600 dark:hover:text-stone-300">{{ t('legal.notice.linkLabel') }}</RouterLink>
+        </nav>
       </div>
     </main>
   </div>

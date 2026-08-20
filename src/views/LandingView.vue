@@ -247,6 +247,11 @@ onBeforeUnmount(() => observer?.disconnect())
           </svg>
           <span class="font-display font-semibold text-stone-700 dark:text-stone-200">librOpinion</span>
         </div>
+        <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+          <RouterLink to="/privacidad" class="transition-colors hover:text-stone-900 dark:hover:text-white">{{ t('legal.privacy.linkLabel') }}</RouterLink>
+          <RouterLink to="/terminos" class="transition-colors hover:text-stone-900 dark:hover:text-white">{{ t('legal.terms.linkLabel') }}</RouterLink>
+          <RouterLink to="/aviso-legal" class="transition-colors hover:text-stone-900 dark:hover:text-white">{{ t('legal.notice.linkLabel') }}</RouterLink>
+        </nav>
         <p>{{ t('landing.footer') }}</p>
       </div>
     </footer>

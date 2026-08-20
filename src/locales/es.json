@@ -17,7 +17,8 @@
       "haveAccount": "¿Ya tienes cuenta?",
       "login": "Iniciar sesión",
       "confirmBody": "Casi listo. Si {email} es una cuenta nueva, te hemos enviado un enlace para confirmarla. Si ya tenías cuenta, revisa tu correo o inicia sesión.",
-      "goLogin": "Ir a iniciar sesión"
+      "goLogin": "Ir a iniciar sesión",
+      "consent": "He leído y acepto los {terms} y la {privacy}."
     },
     "onboarding": {
       "title": "Elige tu nombre de usuario",
@@ -44,7 +45,8 @@
       "rateLimit": "Demasiados intentos. Prueba de nuevo en un rato.",
       "usernameTaken": "Ese nombre de usuario ya está en uso.",
       "usernameFormat": "Usa entre 3 y 30 caracteres: solo letras, números y guion bajo (_).",
-      "noSession": "No hay ninguna sesión activa."
+      "noSession": "No hay ninguna sesión activa.",
+      "consentRequired": "Debes aceptar los Términos y la Política de Privacidad."
     }
   },
   "landing": {
@@ -62,9 +64,21 @@
       "ctaSecondary": "Ya tengo cuenta"
     },
     "heroQuotes": [
-      { "text": "Era el mejor de los tiempos, era el peor de los tiempos.", "book": "Historia de dos ciudades", "author": "Charles Dickens" },
-      { "text": "No hay amigo tan leal como un libro.", "book": "Sobre la lectura", "author": "Ernest Hemingway" },
-      { "text": "Quien lee mucho y anda mucho, ve mucho y sabe mucho.", "book": "Don Quijote de la Mancha", "author": "Miguel de Cervantes" }
+      {
+        "text": "Era el mejor de los tiempos, era el peor de los tiempos.",
+        "book": "Historia de dos ciudades",
+        "author": "Charles Dickens"
+      },
+      {
+        "text": "No hay amigo tan leal como un libro.",
+        "book": "Sobre la lectura",
+        "author": "Ernest Hemingway"
+      },
+      {
+        "text": "Quien lee mucho y anda mucho, ve mucho y sabe mucho.",
+        "book": "Don Quijote de la Mancha",
+        "author": "Miguel de Cervantes"
+      }
     ],
     "ribbon": [
       "Un lector vive mil vidas antes de morir.",
@@ -78,9 +92,18 @@
       "heading": "Tu biblioteca de frases favoritas",
       "subheading": "Todo lo que subrayas, en un mismo lugar, y compartido con quien quieras.",
       "items": [
-        { "title": "Cita y comenta", "body": "Apunta la frase que te marcó, su página y por qué te llegó. Tu biblioteca de subrayados, ordenada." },
-        { "title": "Sigue a lectores", "body": "Tu feed se llena con las citas de quienes sigues. Descubre a través de los ojos de otros." },
-        { "title": "Encuentra tu próxima lectura", "body": "Cada cita es una puerta a un libro nuevo. Deja que las frases te guíen al siguiente." }
+        {
+          "title": "Cita y comenta",
+          "body": "Apunta la frase que te marcó, su página y por qué te llegó. Tu biblioteca de subrayados, ordenada."
+        },
+        {
+          "title": "Sigue a lectores",
+          "body": "Tu feed se llena con las citas de quienes sigues. Descubre a través de los ojos de otros."
+        },
+        {
+          "title": "Encuentra tu próxima lectura",
+          "body": "Cada cita es una puerta a un libro nuevo. Deja que las frases te guíen al siguiente."
+        }
       ]
     },
     "finalCta": {
@@ -381,5 +404,18 @@
     "languageLabel": "Idioma",
     "languageDesc": "Se aplicará en todos tus dispositivos.",
     "open": "Ajustes"
+  },
+  "legal": {
+    "back": "Volver al inicio",
+    "updated": "Última actualización",
+    "privacy": {
+      "linkLabel": "Política de Privacidad"
+    },
+    "terms": {
+      "linkLabel": "Términos de Uso"
+    },
+    "notice": {
+      "linkLabel": "Aviso Legal"
+    }
   }
 }

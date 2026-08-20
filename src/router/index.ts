@@ -44,6 +44,28 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      // Páginas legales: públicas (accesibles con o sin sesión).
+      path: '/privacidad',
+      name: 'privacy',
+      component: () => import('../views/LegalView.vue'),
+      props: { doc: 'privacy' },
+      meta: { public: true },
+    },
+    {
+      path: '/terminos',
+      name: 'terms',
+      component: () => import('../views/LegalView.vue'),
+      props: { doc: 'terms' },
+      meta: { public: true },
+    },
+    {
+      path: '/aviso-legal',
+      name: 'legal-notice',
+      component: () => import('../views/LegalView.vue'),
+      props: { doc: 'notice' },
+      meta: { public: true },
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
@@ -84,8 +106,9 @@ router.beforeEach((to) => {
     return { name: 'feed' }
   }
 
-  // Con sesión pero sin username → forzar onboarding (salvo que ya esté allí).
-  if (auth.isAuthenticated && auth.needsOnboarding && to.name !== 'onboarding') {
+  // Con sesión pero sin username → forzar onboarding (salvo que ya esté allí, o
+  // que sea una ruta pública como las legales o el permalink de una cita).
+  if (auth.isAuthenticated && auth.needsOnboarding && to.name !== 'onboarding' && !to.meta.public) {
     return { name: 'onboarding' }
   }
 

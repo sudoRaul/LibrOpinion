@@ -17,9 +17,14 @@ const error = ref<string | null>(null)
 const loading = ref(false)
 const googleLoading = ref(false)
 const confirmationSent = ref(false)
+const accepted = ref(false)
 
 async function onSubmit() {
   error.value = null
+  if (!accepted.value) {
+    error.value = 'auth.err.consentRequired'
+    return
+  }
   if (password.value.length < 6) {
     error.value = 'auth.err.passwordShort'
     return
@@ -41,6 +46,10 @@ async function onSubmit() {
 
 async function onGoogle() {
   error.value = null
+  if (!accepted.value) {
+    error.value = 'auth.err.consentRequired'
+    return
+  }
   googleLoading.value = true
   const { error: err } = await auth.signInWithGoogle()
   if (err) {
@@ -101,6 +110,25 @@ async function onGoogle() {
           :hint="t('auth.fields.passwordHint')"
           :disabled="loading"
         />
+
+        <label class="flex items-start gap-2.5 text-sm text-stone-600 dark:text-stone-400">
+          <input
+            v-model="accepted"
+            type="checkbox"
+            class="mt-0.5 h-4 w-4 flex-none accent-emerald-600"
+            :disabled="loading"
+          />
+          <span>
+            <i18n-t keypath="auth.signup.consent" scope="global">
+              <template #terms>
+                <RouterLink to="/terminos" target="_blank" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">{{ t('legal.terms.linkLabel') }}</RouterLink>
+              </template>
+              <template #privacy>
+                <RouterLink to="/privacidad" target="_blank" class="font-medium text-emerald-700 hover:underline dark:text-emerald-400">{{ t('legal.privacy.linkLabel') }}</RouterLink>
+              </template>
+            </i18n-t>
+          </span>
+        </label>
 
         <button
           type="submit"
