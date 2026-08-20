@@ -111,7 +111,7 @@ async function onToggle(u: FollowListUser) {
           <ul v-else class="divide-y divide-stone-100 dark:divide-stone-800/70">
             <li v-for="u in items" :key="u.id" class="flex items-center gap-3 px-3 py-2.5">
               <button class="flex min-w-0 flex-1 items-center gap-3 text-left" @click="goTo(u)">
-                <img
+                <img loading="lazy" decoding="async"
                   v-if="u.avatar_url"
                   :src="u.avatar_url"
                   :alt="displayName(u)"

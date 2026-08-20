@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
             class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-stone-50 dark:hover:bg-stone-800"
             @click="go(hit)"
           >
-            <img
+            <img loading="lazy" decoding="async"
               v-if="hit.avatar_url"
               :src="hit.avatar_url"
               :alt="nameOf(hit)"

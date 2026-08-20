@@ -168,7 +168,7 @@ async function onReview(r: AdminReport, status: 'reviewed' | 'dismissed') {
           <!-- Usuario reportado -->
           <div class="flex items-center gap-3">
             <RouterLink v-if="r.reported?.username" :to="`/u/${r.reported.username}`" class="shrink-0">
-              <img
+              <img loading="lazy" decoding="async"
                 v-if="r.reported.avatar_url"
                 :src="r.reported.avatar_url"
                 :alt="r.reported.username"

@@ -167,7 +167,7 @@ async function confirmCreate() {
       <input v-model="newTitle" type="text" :class="inputClass" :placeholder="t('bookSelect.titlePlaceholder')" />
       <input v-model="newAuthor" type="text" :class="inputClass" :placeholder="t('bookSelect.authorPlaceholder')" />
       <div class="flex items-center gap-3">
-        <img
+        <img loading="lazy" decoding="async"
           v-if="newCover.trim()"
           :src="newCover.trim()"
           :alt="t('bookSelect.coverAlt')"

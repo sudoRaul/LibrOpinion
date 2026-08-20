@@ -1,16 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fuentes auto-alojadas (sin conexión a Google → más rápido y sin fuga de datos).
+         Precargamos las variantes latin críticas (cuerpo y titulares). -->
+    <link rel="preload" href="/fonts/inter-latin-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/fraunces-latin-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
     <title>librOpinion — Las frases que te marcan</title>
+
+    <!-- SEO base (la landing y el resto de rutas). La Edge Function de /q/:id
+         reemplaza el título y el bloque OG:DEFAULT por los de cada cita. -->
+    <meta
+      name="description"
+      content="librOpinion es la red social de las frases que te marcan: publica citas de libros con su página y tu nota, sigue a otros lectores y descubre qué subrayan."
+    />
+    <meta name="author" content="Raúl Rodríguez Fernández" />
+    <meta name="robots" content="index, follow" />
+    <!-- BASE_URL: cambiar por el dominio real al desplegar (Netlify/Hostinger). -->
+    <link rel="canonical" href="https://libropinion.netlify.app/" />
+    <meta name="theme-color" content="#047857" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
+
+    <!-- OG:DEFAULT:START (la edge de /q/:id elimina este bloque en permalinks) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="librOpinion" />
+    <meta property="og:title" content="librOpinion — Las frases que te marcan" />
+    <meta
+      property="og:description"
+      content="La red social de las frases que te marcan. Publica citas de libros, sigue a otros lectores y descubre qué subrayan."
+    />
+    <meta property="og:url" content="https://libropinion.netlify.app/" />
+    <meta property="og:image" content="https://libropinion.netlify.app/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="librOpinion — Las frases que te marcan" />
+    <meta
+      name="twitter:description"
+      content="La red social de las frases que te marcan. Publica citas de libros, sigue a otros lectores y descubre qué subrayan."
+    />
+    <meta name="twitter:image" content="https://libropinion.netlify.app/og-cover.png" />
+    <!-- OG:DEFAULT:END -->
+
+    <!-- Datos estructurados (marca). BASE_URL: actualizar al desplegar. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://libropinion.netlify.app/#organization",
+            "name": "librOpinion",
+            "url": "https://libropinion.netlify.app/",
+            "logo": "https://libropinion.netlify.app/og-cover.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://libropinion.netlify.app/#website",
+            "name": "librOpinion",
+            "url": "https://libropinion.netlify.app/",
+            "description": "La red social de las frases que te marcan: publica citas de libros, sigue a otros lectores y descubre qué subrayan.",
+            "inLanguage": ["es", "en"],
+            "publisher": { "@id": "https://libropinion.netlify.app/#organization" }
+          }
+        ]
+      }
+    </script>
     <script>
       // Aplica el tema antes de pintar para evitar el parpadeo (FOUC).
       (function () {
@@ -21,9 +82,88 @@
         } catch (e) {}
       })()
     </script>
+
+    <!-- Splash estático de la home: FCP instantáneo y H1 rastreable sin depender
+         de JS. La SPA lo reemplaza al montar (mount normal, sin hydration).
+         Estilos autónomos (con dark mode) para no depender del purge de Tailwind. -->
+    <style>
+      .lo-splash {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+        background: #fafaf9;
+        color: #1c1917;
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      }
+      .dark .lo-splash { background: #0c0a09; color: #e7e5e4; }
+      .lo-splash__brand { display: flex; align-items: center; gap: 0.5rem; }
+      .lo-splash__brand svg { width: 1.75rem; height: 1.75rem; color: #047857; }
+      .dark .lo-splash__brand svg { color: #34d399; }
+      .lo-splash__brand span {
+        font-family: 'Fraunces', ui-serif, Georgia, serif;
+        font-weight: 600; font-size: 1.25rem; color: #1c1917;
+      }
+      .dark .lo-splash__brand span { color: #fff; }
+      .lo-splash h1 {
+        font-family: 'Fraunces', ui-serif, Georgia, serif;
+        font-weight: 600;
+        font-size: clamp(2.5rem, 6vw, 3.75rem);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        max-width: 16ch;
+        margin: 0;
+        color: #1c1917;
+      }
+      .dark .lo-splash h1 { color: #fff; }
+      .lo-splash h1 .hl { color: #047857; }
+      .dark .lo-splash h1 .hl { color: #34d399; }
+      .lo-splash p {
+        max-width: 34rem; margin: 0; font-size: 1.125rem; line-height: 1.6; color: #57534e;
+      }
+      .dark .lo-splash p { color: #a8a29e; }
+      .lo-splash__cta { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+      .lo-splash a {
+        display: inline-flex; align-items: center; border-radius: 0.75rem;
+        padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 500; text-decoration: none;
+      }
+      .lo-splash__primary { background: #047857; color: #fff; }
+      .dark .lo-splash__primary { background: #059669; }
+      .lo-splash__secondary { border: 1px solid #d6d3d1; color: #44403c; }
+      .dark .lo-splash__secondary { border-color: #44403c; color: #d6d3d1; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Hero estático de la home (se reemplaza al montar la SPA). -->
+      <div class="lo-splash">
+        <div class="lo-splash__brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+            <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
+          </svg>
+          <span>librOpinion</span>
+        </div>
+        <h1>Las frases que te <span class="hl">marcan</span> merecen un lugar.</h1>
+        <p>Guarda las citas de los libros que lees, añade tu página y tu opinión, y descubre lo que subrayan las personas a las que sigues.</p>
+        <div class="lo-splash__cta">
+          <a class="lo-splash__primary" href="/signup">Empieza a citar gratis</a>
+          <a class="lo-splash__secondary" href="/login">Ya tengo cuenta</a>
+        </div>
+      </div>
+    </div>
+    <script>
+      // El splash es solo para la home; en otras rutas se retira ya (antes de que
+      // monte la SPA) para no mostrar un flash de landing en rutas de la app.
+      if (location.pathname !== '/') {
+        var _app = document.getElementById('app')
+        if (_app) _app.innerHTML = ''
+      }
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

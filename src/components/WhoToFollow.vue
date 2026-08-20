@@ -43,7 +43,7 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
         class="flex w-40 flex-none snap-start flex-col items-center rounded-xl border border-stone-200 bg-stone-50 p-4 text-center dark:border-stone-800 dark:bg-stone-950/40"
       >
         <RouterLink :to="`/u/${p.username}`" class="group flex flex-col items-center">
-          <img
+          <img loading="lazy" decoding="async"
             v-if="p.avatar_url"
             :src="p.avatar_url"
             :alt="displayName(p)"

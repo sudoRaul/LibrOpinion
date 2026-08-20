@@ -123,7 +123,7 @@ async function submit() {
           </p>
 
           <div class="flex items-center gap-4">
-            <img
+            <img loading="lazy" decoding="async"
               v-if="avatarUrl.trim()"
               :src="avatarUrl.trim()"
               :alt="t('editProfile.avatarPreviewAlt')"

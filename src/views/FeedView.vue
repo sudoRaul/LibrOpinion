@@ -98,7 +98,7 @@ async function logout() {
             class="flex items-center"
             :title="t('feed.myProfile')"
           >
-            <img
+            <img loading="lazy" decoding="async"
               v-if="auth.profile.avatar_url"
               :src="auth.profile.avatar_url"
               :alt="auth.profile.username"

@@ -87,6 +87,8 @@ export default async (request: Request, context: Context): Promise<Response> => 
   `
 
   html = html.replace(/<title>.*?<\/title>/i, `<title>${esc(title)}</title>`)
+  // Quita el bloque OG por defecto del index para no duplicar tags en el permalink.
+  html = html.replace(/<!-- OG:DEFAULT:START -->[\s\S]*?<!-- OG:DEFAULT:END -->/, '')
   html = html.replace('</head>', `${tags}</head>`)
 
   const headers = new Headers(res.headers)

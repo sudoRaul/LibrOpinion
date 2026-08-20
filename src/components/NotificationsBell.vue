@@ -163,7 +163,7 @@ async function onClickItem(n: AppNotification) {
                 :class="!n.read ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''"
               >
                 <button class="flex w-full items-start gap-3 text-left" @click="goToActor(n)">
-                  <img
+                  <img loading="lazy" decoding="async"
                     v-if="n.actor?.avatar_url"
                     :src="n.actor.avatar_url"
                     :alt="actorName(n)"
@@ -208,7 +208,7 @@ async function onClickItem(n: AppNotification) {
                 :class="!n.read ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''"
                 @click="onClickItem(n)"
               >
-                <img
+                <img loading="lazy" decoding="async"
                   v-if="n.actor?.avatar_url"
                   :src="n.actor.avatar_url"
                   :alt="actorName(n)"

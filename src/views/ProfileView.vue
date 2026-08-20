@@ -235,7 +235,7 @@ function onProfileUpdated(newUsername: string) {
         <section class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-center gap-4">
-              <img
+              <img loading="lazy" decoding="async"
                 v-if="profile.avatar_url"
                 :src="profile.avatar_url"
                 :alt="displayName"

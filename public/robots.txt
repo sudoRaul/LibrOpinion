@@ -1,0 +1,17 @@
+# librOpinion — robots.txt
+# Público e indexable: la landing (/) y los permalinks de cita (/q/:id).
+# El resto son rutas de la app tras login (sirven el shell y redirigen): se excluyen.
+
+User-agent: *
+Allow: /$
+Allow: /q/
+Disallow: /app
+Disallow: /u/
+Disallow: /admin
+Disallow: /onboarding
+Disallow: /solicitudes
+Disallow: /login
+Disallow: /signup
+
+# BASE_URL: cambiar por el dominio real al desplegar (Netlify/Hostinger).
+Sitemap: https://libropinion.netlify.app/sitemap.xml

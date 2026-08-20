@@ -163,7 +163,7 @@ function onReportComment(c: Comment) {
           :to="handle ? `/u/${handle}` : undefined"
           class="flex-none"
         >
-          <img
+          <img loading="lazy" decoding="async"
             v-if="quote.author?.avatar_url"
             :src="quote.author.avatar_url"
             :alt="displayName"
@@ -299,7 +299,7 @@ function onReportComment(c: Comment) {
         class="mt-4 flex items-center gap-3 rounded-xl bg-stone-50 p-3 transition-colors dark:bg-stone-800/60"
         :class="showDetailLink ? 'group-hover/detail:bg-stone-100 dark:group-hover/detail:bg-stone-800' : ''"
       >
-        <img
+        <img loading="lazy" decoding="async"
           v-if="quote.book?.cover_url"
           :src="quote.book.cover_url"
           :alt="quote.book?.title"
@@ -387,7 +387,7 @@ function onReportComment(c: Comment) {
       <!-- Composer -->
       <form class="flex items-start gap-2" @submit.prevent="submitComment">
         <div class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-          <img
+          <img loading="lazy" decoding="async"
             v-if="auth.profile?.avatar_url"
             :src="auth.profile.avatar_url"
             :alt="t('quote.comments.you')"
@@ -423,7 +423,7 @@ function onReportComment(c: Comment) {
             :to="c.author?.username ? `/u/${c.author.username}` : undefined"
             class="flex-none"
           >
-            <img
+            <img loading="lazy" decoding="async"
               v-if="c.author?.avatar_url"
               :src="c.author.avatar_url"
               :alt="cName(c)"

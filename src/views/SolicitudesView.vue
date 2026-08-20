@@ -85,7 +85,7 @@ onMounted(load)
           class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900"
         >
           <RouterLink :to="`/u/${r.follower?.username}`" class="flex min-w-0 flex-1 items-center gap-3">
-            <img
+            <img loading="lazy" decoding="async"
               v-if="r.follower?.avatar_url"
               :src="r.follower.avatar_url"
               :alt="displayName(r)"
