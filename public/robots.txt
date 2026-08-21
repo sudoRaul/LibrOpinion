@@ -1,17 +1,25 @@
 # librOpinion — robots.txt
-# Público e indexable: la landing (/) y los permalinks de cita (/q/:id).
-# El resto son rutas de la app tras login (sirven el shell y redirigen): se excluyen.
+# Estrategia allowlist: se bloquea todo por defecto y se permite solo lo
+# público e indexable (landing y permalinks de cita). Así las rutas de la app
+# tras login (/app, /u/, /admin, /solicitudes, /onboarding...) quedan fuera del
+# índice SIN enumerarlas (no se revela ninguna ruta sensible en un fichero público).
+# La seguridad real la imponen los guards del router y la RLS de Supabase.
 
 User-agent: *
+# Público
 Allow: /$
 Allow: /q/
-Disallow: /app
-Disallow: /u/
-Disallow: /admin
-Disallow: /onboarding
-Disallow: /solicitudes
-Disallow: /login
-Disallow: /signup
+Allow: /privacidad
+Allow: /terminos
+Allow: /aviso-legal
+# Recursos estáticos (para que el buscador pueda renderizar las páginas públicas)
+Allow: /assets/
+Allow: /fonts/
+Allow: /favicon.svg
+Allow: /apple-touch-icon.png
+Allow: /og-cover.png
+# Todo lo demás, fuera
+Disallow: /
 
 # BASE_URL: cambiar por el dominio real al desplegar (Netlify/Hostinger).
 Sitemap: https://libropinion.netlify.app/sitemap.xml
