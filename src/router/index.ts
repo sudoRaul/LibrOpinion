@@ -3,6 +3,13 @@ import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  // Al navegar a una ruta nueva, subir arriba del todo. Se respeta la posición
+  // previa al usar atrás/adelante del navegador, y las anclas #id si las hay.
+  scrollBehavior(_to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (_to.hash) return { el: _to.hash, behavior: 'smooth' }
+    return { top: 0 }
+  },
   routes: [
     {
       // Landing pública. Si ya hay sesión, el guard redirige al dashboard (/app).
