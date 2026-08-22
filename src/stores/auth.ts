@@ -166,6 +166,8 @@ function translateAuthError(message: string): string {
   if (m.includes('user already registered')) return 'auth.err.alreadyRegistered'
   if (m.includes('password should be at least')) return 'auth.err.passwordShort'
   if (m.includes('unable to validate email address')) return 'auth.err.invalidEmail'
+  // Supabase (versiones nuevas): `Email address "..." is invalid`.
+  if (m.includes('email address') && m.includes('invalid')) return 'auth.err.invalidEmail'
   if (m.includes('email rate limit')) return 'auth.err.rateLimit'
   return message
 }
