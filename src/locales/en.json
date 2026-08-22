@@ -35,12 +35,22 @@
       "emailPlaceholder": "you{'@'}email.com",
       "passwordLabel": "Password",
       "passwordPlaceholder": "••••••••",
-      "passwordHint": "At least 6 characters."
+      "passwordHint": "At least 8 characters."
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password",
+      "strengthLabel": "Strength",
+      "veryWeak": "Very weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong"
     },
     "err": {
       "invalidCredentials": "Incorrect email or password.",
+    "missingCredentials": "Enter your email and password.",
       "alreadyRegistered": "That email is already registered.",
-      "passwordShort": "The password must be at least 6 characters.",
+      "passwordShort": "The password must be at least 8 characters.",
       "invalidEmail": "The email is not valid.",
       "rateLimit": "Too many attempts. Try again in a little while.",
       "usernameTaken": "That username is already taken.",

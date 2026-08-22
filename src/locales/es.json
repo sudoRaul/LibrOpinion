@@ -35,12 +35,22 @@
       "emailPlaceholder": "tu{'@'}correo.com",
       "passwordLabel": "Contraseña",
       "passwordPlaceholder": "••••••••",
-      "passwordHint": "Mínimo 6 caracteres."
+      "passwordHint": "Mínimo 8 caracteres."
+    },
+    "password": {
+      "show": "Mostrar contraseña",
+      "hide": "Ocultar contraseña",
+      "strengthLabel": "Seguridad",
+      "veryWeak": "Muy débil",
+      "weak": "Débil",
+      "fair": "Aceptable",
+      "strong": "Fuerte"
     },
     "err": {
       "invalidCredentials": "Email o contraseña incorrectos.",
+    "missingCredentials": "Introduce tu email y tu contraseña.",
       "alreadyRegistered": "Ese email ya está registrado.",
-      "passwordShort": "La contraseña debe tener al menos 6 caracteres.",
+      "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
       "invalidEmail": "El email no es válido.",
       "rateLimit": "Demasiados intentos. Prueba de nuevo en un rato.",
       "usernameTaken": "Ese nombre de usuario ya está en uso.",

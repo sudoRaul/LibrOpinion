@@ -19,6 +19,10 @@ const googleLoading = ref(false)
 
 async function onSubmit() {
   error.value = null
+  if (!email.value.trim() || !password.value) {
+    error.value = 'auth.err.missingCredentials'
+    return
+  }
   loading.value = true
   const { error: err } = await auth.signInWithPassword(email.value.trim(), password.value)
   loading.value = false

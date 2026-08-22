@@ -162,6 +162,7 @@ export const useAuthStore = defineStore('auth', {
 function translateAuthError(message: string): string {
   const m = message.toLowerCase()
   if (m.includes('invalid login credentials')) return 'auth.err.invalidCredentials'
+  if (m.includes('missing email') || m.includes('missing phone')) return 'auth.err.missingCredentials'
   if (m.includes('user already registered')) return 'auth.err.alreadyRegistered'
   if (m.includes('password should be at least')) return 'auth.err.passwordShort'
   if (m.includes('unable to validate email address')) return 'auth.err.invalidEmail'

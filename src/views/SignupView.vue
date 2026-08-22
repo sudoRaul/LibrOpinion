@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import AuthShell from '../components/AuthShell.vue'
 import AppTextField from '../components/AppTextField.vue'
 import GoogleButton from '../components/GoogleButton.vue'
+import PasswordStrengthMeter from '../components/PasswordStrengthMeter.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -25,7 +26,11 @@ async function onSubmit() {
     error.value = 'auth.err.consentRequired'
     return
   }
-  if (password.value.length < 6) {
+  if (!email.value.trim()) {
+    error.value = 'auth.err.missingCredentials'
+    return
+  }
+  if (password.value.length < 8) {
     error.value = 'auth.err.passwordShort'
     return
   }
@@ -100,16 +105,19 @@ async function onGoogle() {
           :placeholder="t('auth.fields.emailPlaceholder')"
           :disabled="loading"
         />
-        <AppTextField
-          id="password"
-          v-model="password"
-          :label="t('auth.fields.passwordLabel')"
-          type="password"
-          autocomplete="new-password"
-          :placeholder="t('auth.fields.passwordPlaceholder')"
-          :hint="t('auth.fields.passwordHint')"
-          :disabled="loading"
-        />
+        <div>
+          <AppTextField
+            id="password"
+            v-model="password"
+            :label="t('auth.fields.passwordLabel')"
+            type="password"
+            autocomplete="new-password"
+            :placeholder="t('auth.fields.passwordPlaceholder')"
+            :hint="t('auth.fields.passwordHint')"
+            :disabled="loading"
+          />
+          <PasswordStrengthMeter :password="password" />
+        </div>
 
         <label class="flex items-start gap-2.5 text-sm text-stone-600 dark:text-stone-400">
           <input
