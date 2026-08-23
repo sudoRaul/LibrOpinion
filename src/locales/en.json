@@ -1,6 +1,7 @@
 {
   "auth": {
     "google": "Continue with Google",
+    "googleConsent": "By continuing with Google, you accept the {terms} and {privacy}.",
     "login": {
       "title": "Welcome back",
       "subtitle": "Sign in to see the quotes from the people you follow.",

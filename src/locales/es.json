@@ -1,6 +1,7 @@
 {
   "auth": {
     "google": "Continuar con Google",
+    "googleConsent": "Al continuar con Google, aceptas los {terms} y la {privacy}.",
     "login": {
       "title": "Bienvenido de nuevo",
       "subtitle": "Entra para ver las citas de quienes sigues.",

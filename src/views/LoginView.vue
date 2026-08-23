@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import AuthShell from '../components/AuthShell.vue'
 import AppTextField from '../components/AppTextField.vue'
 import GoogleButton from '../components/GoogleButton.vue'
+import GoogleConsentNotice from '../components/GoogleConsentNotice.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -91,6 +92,7 @@ async function onGoogle() {
     </div>
 
     <GoogleButton :loading="googleLoading" :label="t('auth.google')" @click="onGoogle" />
+    <GoogleConsentNotice />
 
     <template #footer>
       {{ t('auth.login.noAccount') }}

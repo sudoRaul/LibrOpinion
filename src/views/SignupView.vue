@@ -7,6 +7,7 @@ import AuthShell from '../components/AuthShell.vue'
 import AppTextField from '../components/AppTextField.vue'
 import GoogleButton from '../components/GoogleButton.vue'
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter.vue'
+import GoogleConsentNotice from '../components/GoogleConsentNotice.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -51,10 +52,8 @@ async function onSubmit() {
 
 async function onGoogle() {
   error.value = null
-  if (!accepted.value) {
-    error.value = 'auth.err.consentRequired'
-    return
-  }
+  // El consentimiento para Google se cubre con el aviso pasivo bajo el botón
+  // (estándar del sector); el checkbox obligatorio aplica solo al registro con email.
   googleLoading.value = true
   const { error: err } = await auth.signInWithGoogle()
   if (err) {
@@ -154,6 +153,7 @@ async function onGoogle() {
       </div>
 
       <GoogleButton :loading="googleLoading" :label="t('auth.google')" @click="onGoogle" />
+      <GoogleConsentNotice />
     </template>
 
     <template #footer>
