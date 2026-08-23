@@ -59,6 +59,16 @@ function start() {
         if (row.user_id !== myId) comments.applyRemoteInsert(row.quote_id)
       },
     )
+    // Comentario borrado por otro: bajo el contador (y recargo la lista si está
+    // abierta). Requiere REPLICA IDENTITY FULL en `comments` para traer quote_id.
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'comments' },
+      (payload) => {
+        const row = payload.old as { user_id?: string; quote_id?: string }
+        if (row.quote_id && row.user_id !== myId) comments.applyRemoteDelete(row.quote_id)
+      },
+    )
     // Cita editada por otro: refresco la que ya tengo en el feed.
     .on(
       'postgres_changes',
@@ -90,8 +100,12 @@ function start() {
         const row = payload.new as { id: string }
         void notifications.applyIncoming(row.id).then((n) => {
           if (!n) return
-          // Me aceptaron: si estoy en el perfil del que acepta, pasa a "Siguiendo".
-          if (n.type === 'follow_accepted') reloadProfileIfViewing(n.actor_id)
+          // Me aceptaron: si estoy en el perfil del que acepta, pasa a "Siguiendo",
+          // y traigo sus citas al feed al instante (antes había que recargar).
+          if (n.type === 'follow_accepted') {
+            reloadProfileIfViewing(n.actor_id)
+            void feed.onFollowedAuthor(n.actor_id)
+          }
           // Nueva solicitud: mantengo vivo el recuento de "Solicitudes".
           if (n.type === 'follow_request') void useFollowRequests().loadCount()
         })

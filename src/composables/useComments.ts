@@ -67,6 +67,13 @@ function applyRemoteInsert(quoteId: string) {
   if (loaded.has(quoteId)) void load(quoteId)
 }
 
+/** Realtime: OTRO usuario borró su comentario. Baja el contador y, si el panel
+ *  está cargado, recarga la lista para que desaparezca. */
+function applyRemoteDelete(quoteId: string) {
+  counts.set(quoteId, Math.max(0, (counts.get(quoteId) ?? 1) - 1))
+  if (loaded.has(quoteId)) void load(quoteId)
+}
+
 export function useComments() {
   return {
     hydrateCounts,
@@ -74,6 +81,7 @@ export function useComments() {
     add,
     remove,
     applyRemoteInsert,
+    applyRemoteDelete,
     getCount: (quoteId: string) => counts.get(quoteId) ?? 0,
     getList: (quoteId: string) => lists.get(quoteId) ?? [],
     isLoaded: (quoteId: string) => loaded.has(quoteId),
