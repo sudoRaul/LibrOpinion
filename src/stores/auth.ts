@@ -189,7 +189,9 @@ function translateAuthError(message: string): string {
   if (m.includes('unable to validate email address')) return 'auth.err.invalidEmail'
   // Supabase (versiones nuevas): `Email address "..." is invalid`.
   if (m.includes('email address') && m.includes('invalid')) return 'auth.err.invalidEmail'
-  if (m.includes('email rate limit')) return 'auth.err.rateLimit'
+  // Cualquier límite de tasa (emails, intentos de login/registro por IP, OTP…).
+  if (m.includes('rate limit') || m.includes('too many requests') || m.includes('over_request_rate_limit'))
+    return 'auth.err.rateLimit'
   // Fallo del SMTP (p. ej. Brevo rechaza el envío): "Error sending confirmation email".
   if (m.includes('error sending') && m.includes('email')) return 'auth.err.emailSendFailed'
   return message
