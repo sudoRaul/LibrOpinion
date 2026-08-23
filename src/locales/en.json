@@ -49,6 +49,7 @@
     "err": {
       "invalidCredentials": "Incorrect email or password.",
     "missingCredentials": "Enter your email and password.",
+    "emailSendFailed": "We couldn't send the confirmation email. Please try again in a few minutes.",
       "alreadyRegistered": "That email is already registered.",
       "passwordShort": "The password must be at least 8 characters.",
       "invalidEmail": "The email is not valid.",
