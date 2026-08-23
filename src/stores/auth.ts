@@ -43,7 +43,11 @@ export const useAuthStore = defineStore('auth', {
       const { data, error } = await supabase.rpc('current_profile')
 
       if (error) {
+        // Si la RPC falla (p. ej. problema transitorio de red), NO machacamos el
+        // profile que ya tuviéramos: machacarlo a null haría que `needsOnboarding`
+        // se activara y el guard rebotara al onboarding aunque el username exista.
         console.error('Error cargando el profile:', error.message)
+        return
       }
       this.profile = data?.[0] ?? null
       // La preferencia de idioma del perfil manda sobre la detección del navegador.
@@ -111,15 +115,25 @@ export const useAuthStore = defineStore('auth', {
     /** Elige el username en el onboarding (RLS permite editar el propio profile). */
     async updateUsername(username: string): Promise<{ error: string | null }> {
       if (!this.user) return { error: 'auth.err.noSession' }
-      const { error } = await supabase
+      // `.select()` devuelve las filas afectadas: si es 0 (RLS lo bloquea o no
+      // existe la fila del profile), un UPDATE normal devolvería 204 SIN error y
+      // creeríamos que fue bien. Así lo detectamos y avisamos.
+      const { data, error } = await supabase
         .from('profiles')
         .update({ username })
         .eq('id', this.user.id)
+        .select('id, username')
+        .maybeSingle()
       if (error) {
         // 23505 = violación de UNIQUE (username ya usado).
         if (error.code === '23505') return { error: 'auth.err.usernameTaken' }
         return { error: error.message }
       }
+      if (!data) return { error: 'auth.err.updateFailed' }
+      // Reflejamos el username ya en el store (optimista) para que el guard no
+      // dependa del refetch: si `current_profile` fallara, la navegación no se
+      // quedaría atascada en el onboarding.
+      if (this.profile) this.profile = { ...this.profile, username: data.username }
       await this.fetchProfile()
       return { error: null }
     },

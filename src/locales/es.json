@@ -56,6 +56,7 @@
       "usernameTaken": "Ese nombre de usuario ya está en uso.",
       "usernameFormat": "Usa entre 3 y 30 caracteres: solo letras, números y guion bajo (_).",
       "noSession": "No hay ninguna sesión activa.",
+    "updateFailed": "No se pudo guardar. Inténtalo de nuevo.",
       "consentRequired": "Debes aceptar los Términos y la Política de Privacidad."
     }
   },

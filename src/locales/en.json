@@ -56,6 +56,7 @@
       "usernameTaken": "That username is already taken.",
       "usernameFormat": "Use between 3 and 30 characters: letters, numbers and underscore (_) only.",
       "noSession": "There is no active session.",
+    "updateFailed": "Couldn't save. Please try again.",
       "consentRequired": "You must accept the Terms and the Privacy Policy."
     }
   },
