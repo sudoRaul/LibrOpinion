@@ -99,8 +99,15 @@ export const useAuthStore = defineStore('auth', {
 
     /** Login con email/contraseña. */
     async signInWithPassword(email: string, password: string): Promise<{ error: string | null }> {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      return { error: error ? translateAuthError(error.message) : null }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) return { error: translateAuthError(error.message) }
+      // Dejamos sesión y PERFIL listos ANTES de devolver el control, para que
+      // cuando la vista navegue el guard ya vea el `username` y no rebote al
+      // onboarding (el `onAuthStateChange` refresca el perfil sin await → carrera).
+      this.session = data.session
+      this.user = data.user
+      await this.fetchProfile()
+      return { error: null }
     },
 
     /** Login con Google (OAuth). Redirige fuera de la app; la sesión se detecta al volver. */
