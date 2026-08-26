@@ -134,7 +134,7 @@ async function logout() {
       </div>
     </header>
 
-    <main class="mx-auto max-w-2xl px-4 py-6">
+    <main class="mx-auto max-w-2xl px-4 pt-6 pb-32">
       <!-- Buscador de lectores -->
       <div class="mb-4">
         <ProfileSearch />

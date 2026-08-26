@@ -71,6 +71,33 @@ button:focus-visible {
 }
 .heart-pop { animation: heart-pop 0.35s ease; }
 
+/* Micro-interacción al seguir/solicitar: pop del botón + onda esmeralda */
+@keyframes lo-follow-pop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.9); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.lo-follow-pop { animation: lo-follow-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes lo-follow-ring {
+  0%   { transform: scale(0.75); opacity: 0.55; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.lo-follow-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px #10b981; /* emerald-500 */
+  animation: lo-follow-ring 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Salida con gracia de una tarjeta de "A quién seguir" al seguirla */
+.wtf-leave-active { transition: opacity 0.35s ease, transform 0.35s ease; }
+.wtf-leave-to     { opacity: 0; transform: scale(0.82); }
+.wtf-move         { transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+
 /* Entrada escalonada (above the fold) */
 .lo-fade-up {
   opacity: 0;
@@ -112,7 +139,11 @@ button:focus-visible {
   .lo-float-rot,
   .lo-blob,
   .lo-marquee-track,
-  .heart-pop { animation: none !important; }
+  .heart-pop,
+  .lo-follow-pop,
+  .lo-follow-ring { animation: none !important; }
+  .wtf-leave-active,
+  .wtf-move { transition: none !important; }
   .lo-fade-up { opacity: 1; }
   .lo-reveal { opacity: 1; transform: none; transition: none; }
 }

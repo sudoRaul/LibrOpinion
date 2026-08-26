@@ -34,7 +34,9 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
     </div>
 
     <!-- Slider horizontal con scroll-snap; sin flechas, deslizable con el dedo. -->
-    <div
+    <TransitionGroup
+      tag="div"
+      name="wtf"
       class="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-1 px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <article
@@ -72,6 +74,6 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
           {{ p.is_private ? t('whoToFollow.request') : t('whoToFollow.follow') }}
         </button>
       </article>
-    </div>
+    </TransitionGroup>
   </section>
 </template>

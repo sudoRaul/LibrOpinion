@@ -58,7 +58,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
     >
       <div
         v-if="open"
-        class="absolute right-0 z-40 mt-2 w-44 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-xl dark:border-stone-700 dark:bg-stone-800"
+        class="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-xl dark:border-stone-700 dark:bg-stone-800"
       >
         <button
           v-for="l in locales"

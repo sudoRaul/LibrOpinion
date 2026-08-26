@@ -48,6 +48,17 @@ const {
   unblock,
 } = useProfile()
 
+// Micro-animación al seguir/solicitar (pop + onda esmeralda) en el botón.
+const followFlash = ref(false)
+async function onFollowClick() {
+  const was = followState.value
+  await toggleFollow()
+  if (was === 'none' && followState.value !== 'none') {
+    followFlash.value = true
+    setTimeout(() => (followFlash.value = false), 650)
+  }
+}
+
 // Menú ⋯ del perfil (bloquear).
 const menuOpen = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
@@ -286,16 +297,18 @@ function onProfileUpdated(newUsername: string) {
               <button
                 v-else
                 :disabled="followBusy"
-                class="rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
-                :class="
+                class="relative rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60"
+                :class="[
                   followState === 'accepted'
                     ? 'group border border-stone-300 text-stone-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-300 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
                     : followState === 'pending'
                       ? 'group border border-stone-300 text-stone-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-stone-700 dark:text-stone-400 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-                      : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500'
-                "
-                @click="toggleFollow"
+                      : 'bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500',
+                  followFlash ? 'lo-follow-pop' : '',
+                ]"
+                @click="onFollowClick"
               >
+                <span v-if="followFlash" class="lo-follow-ring"></span>
                 <template v-if="followState === 'accepted'">
                   <span class="group-hover:hidden">{{ t('profile.following') }}</span>
                   <span class="hidden group-hover:inline">{{ t('profile.unfollow') }}</span>

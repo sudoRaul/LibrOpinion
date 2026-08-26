@@ -54,7 +54,7 @@ onBeforeUnmount(() => observer?.disconnect())
     </div>
 
     <!-- Navegación -->
-    <header class="lo-fade-up mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6">
+    <header class="lo-fade-up relative z-50 mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6">
       <div class="flex items-center gap-2">
         <svg class="h-7 w-7 shrink-0 text-emerald-700 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
