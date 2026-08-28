@@ -310,6 +310,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_private: boolean
           note: string | null
           page: number | null
           user_id: string
@@ -319,6 +320,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_private?: boolean
           note?: string | null
           page?: number | null
           user_id: string
@@ -328,6 +330,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_private?: boolean
           note?: string | null
           page?: number | null
           user_id?: string

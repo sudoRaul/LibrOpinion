@@ -10,7 +10,7 @@ import { useComments } from './useComments'
 // `author:profiles!quotes_user_id_fkey` desambigua el embed: al tener likes y
 // comments FKs a quotes y a profiles, PostgREST ve varias relaciones posibles.
 export const QUOTE_COLUMNS =
-  'id, content, page, note, created_at, user_id, book:books(id, title, author, cover_url), author:profiles!quotes_user_id_fkey(id, username, display_name, avatar_url), likes(count), comments(count)'
+  'id, content, page, note, created_at, user_id, is_private, book:books(id, title, author, cover_url), author:profiles!quotes_user_id_fkey(id, username, display_name, avatar_url), likes(count), comments(count)'
 
 const feedQueryProbe = supabase.from('quotes').select(QUOTE_COLUMNS)
 export type FeedQuote = QueryData<typeof feedQueryProbe>[number]
@@ -155,8 +155,11 @@ async function addQuoteById(quoteId: string) {
 /** Realtime: refresca una cita ya visible (tras editarla otro usuario). */
 async function refreshQuoteById(quoteId: string) {
   if (!quotes.value.some((q) => q.id === quoteId)) return
-  const { data } = await supabase.from('quotes').select(QUOTE_COLUMNS).eq('id', quoteId).single()
+  // maybeSingle: si la cita dejó de ser visible (la hicieron privada), la RLS
+  // devuelve 0 filas ⇒ la retiramos del feed en vez de dejarla obsoleta.
+  const { data } = await supabase.from('quotes').select(QUOTE_COLUMNS).eq('id', quoteId).maybeSingle()
   if (data) quotes.value = quotes.value.map((q) => (q.id === quoteId ? data : q))
+  else quotes.value = quotes.value.filter((q) => q.id !== quoteId)
 }
 
 /** Realtime: quita del feed una cita borrada. */

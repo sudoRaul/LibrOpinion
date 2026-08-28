@@ -38,6 +38,9 @@ const {
   blockBusy,
   quotesHasMore,
   quotesLoadingMore,
+  quoteFilter,
+  quotesReloading,
+  setQuoteFilter,
   load,
   loadMoreQuotes,
   toggleFollow,
@@ -130,8 +133,19 @@ function onQuoteDeleted(id: string) {
   quotes.value = quotes.value.filter((q) => q.id !== id)
 }
 function onQuoteUpdated(updated: FeedQuote) {
-  quotes.value = quotes.value.map((q) => (q.id === updated.id ? updated : q))
+  // Si al editar cambió su visibilidad y ya no encaja en el filtro activo, se
+  // retira de la lista; si encaja, se reemplaza en su sitio.
+  const fits =
+    quoteFilter.value === 'all' ||
+    (quoteFilter.value === 'public' && !updated.is_private) ||
+    (quoteFilter.value === 'private' && updated.is_private)
+  quotes.value = fits
+    ? quotes.value.map((q) => (q.id === updated.id ? updated : q))
+    : quotes.value.filter((q) => q.id !== updated.id)
 }
+
+// Pestañas de filtro de visibilidad (solo en el perfil propio).
+const QUOTE_FILTERS = ['all', 'public', 'private'] as const
 
 // Recarga al entrar y al navegar entre perfiles distintos.
 watch(
@@ -404,9 +418,32 @@ function onProfileUpdated(newUsername: string) {
         </section>
 
         <!-- Citas del usuario -->
-        <h2 class="mb-4 mt-8 font-display text-lg font-semibold text-stone-900 dark:text-white">
-          {{ t('profile.quotesHeading') }}
-        </h2>
+        <div class="mb-4 mt-8 flex flex-wrap items-center justify-between gap-3">
+          <h2 class="font-display text-lg font-semibold text-stone-900 dark:text-white">
+            {{ t('profile.quotesHeading') }}
+          </h2>
+          <!-- Filtro de visibilidad: solo en tu propio perfil (tú ves tus privadas) -->
+          <div
+            v-if="isSelf && canSeeContent && !iBlockedThem"
+            class="inline-flex rounded-xl border border-stone-200 bg-white p-0.5 text-sm dark:border-stone-800 dark:bg-stone-900"
+            role="tablist"
+          >
+            <button
+              v-for="f in QUOTE_FILTERS"
+              :key="f"
+              type="button"
+              role="tab"
+              :aria-selected="quoteFilter === f"
+              class="rounded-lg px-3 py-1.5 font-medium transition-colors"
+              :class="quoteFilter === f
+                ? 'bg-emerald-700 text-white dark:bg-emerald-600'
+                : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white'"
+              @click="setQuoteFilter(f)"
+            >
+              {{ t('profile.filter.' + f) }}
+            </button>
+          </div>
+        </div>
 
         <!-- Lo he bloqueado -->
         <div
@@ -444,8 +481,14 @@ function onProfileUpdated(newUsername: string) {
         </div>
 
         <template v-else>
-          <div v-if="!quotes.length" class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500 dark:border-stone-700 dark:text-stone-400">
-            {{ isSelf ? t('profile.emptySelf') : t('profile.emptyOther') }}
+          <!-- Recarga al cambiar de filtro -->
+          <div v-if="quotesReloading" class="space-y-4">
+            <div v-for="n in 2" :key="n" class="h-40 animate-pulse rounded-2xl bg-stone-200/70 dark:bg-stone-800/60"></div>
+          </div>
+          <div v-else-if="!quotes.length" class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500 dark:border-stone-700 dark:text-stone-400">
+            <template v-if="isSelf && quoteFilter === 'public'">{{ t('profile.emptyPublic') }}</template>
+            <template v-else-if="isSelf && quoteFilter === 'private'">{{ t('profile.emptyPrivate') }}</template>
+            <template v-else>{{ isSelf ? t('profile.emptySelf') : t('profile.emptyOther') }}</template>
           </div>
           <div v-else class="space-y-4">
             <QuoteCard

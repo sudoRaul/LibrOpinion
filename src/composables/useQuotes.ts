@@ -9,6 +9,7 @@ export function useQuotes() {
     content: string
     page: number | null
     note: string | null
+    isPrivate: boolean
   }): Promise<{ quote: FeedQuote | null; error: string | null }> {
     const auth = useAuthStore()
     if (!auth.user) return { quote: null, error: 'No hay ninguna sesión activa.' }
@@ -21,6 +22,7 @@ export function useQuotes() {
         content: input.content.trim(),
         page: input.page,
         note: input.note,
+        is_private: input.isPrivate,
       })
       .select(QUOTE_COLUMNS)
       .single()
@@ -35,7 +37,7 @@ export function useQuotes() {
    */
   async function updateQuote(
     id: string,
-    input: { content: string; page: number | null; note: string | null },
+    input: { content: string; page: number | null; note: string | null; isPrivate: boolean },
   ): Promise<{ quote: FeedQuote | null; error: string | null }> {
     const { data, error } = await supabase
       .from('quotes')
@@ -43,6 +45,7 @@ export function useQuotes() {
         content: input.content.trim(),
         page: input.page,
         note: input.note,
+        is_private: input.isPrivate,
       })
       .eq('id', id)
       .select(QUOTE_COLUMNS)

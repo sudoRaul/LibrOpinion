@@ -15,6 +15,9 @@ export type Profile = Omit<
   'is_admin' | 'ban_reason' | 'banned_at'
 >
 export type FollowState = 'none' | 'pending' | 'accepted'
+// Filtro de visibilidad de las citas del perfil (solo útil en el perfil propio;
+// para otros la RLS ya oculta las privadas, así que el filtro se queda en 'all').
+export type QuoteFilter = 'all' | 'public' | 'private'
 
 const PAGE_SIZE = 20
 // Columnas públicas de un perfil (las que concede la BD tras el fix M-2).
@@ -61,6 +64,17 @@ export function useProfile() {
   // Paginación de las citas del perfil (cursor por fecha).
   const quotesHasMore = ref(false)
   const quotesLoadingMore = ref(false)
+  // Filtro de visibilidad (Todas / Públicas / Privadas) y recarga al cambiarlo.
+  const quoteFilter = ref<QuoteFilter>('all')
+  const quotesReloading = ref(false)
+
+  // Consulta base de las citas de un autor, aplicando el filtro de visibilidad.
+  function baseQuotesQuery(userId: string) {
+    let q = supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', userId)
+    if (quoteFilter.value === 'public') q = q.eq('is_private', false)
+    else if (quoteFilter.value === 'private') q = q.eq('is_private', true)
+    return q
+  }
 
   // ¿Puedo ver el contenido/listas de este perfil? (propio, público o seguidor
   // aceptado; nunca si hay bloqueo en cualquier sentido).
@@ -77,6 +91,7 @@ export function useProfile() {
     loading.value = true
     notFound.value = false
     error.value = null
+    quoteFilter.value = 'all' // cada perfil arranca mostrando todas sus citas
 
     const { data: prof, error: profErr } = await supabase
       .from('profiles')
@@ -110,7 +125,7 @@ export function useProfile() {
       await Promise.all([
       // Contadores públicos vía RPC (la RLS de follows ya no expone el grafo).
       supabase.rpc('follow_counts', { p_target: prof.id }),
-      supabase.from('quotes').select(QUOTE_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false }).limit(PAGE_SIZE),
+      baseQuotesQuery(prof.id).order('created_at', { ascending: false }).limit(PAGE_SIZE),
       auth.user && auth.user.id !== prof.id
         ? supabase.from('follows').select('status').eq('follower_id', auth.user.id).eq('following_id', prof.id).maybeSingle()
         : Promise.resolve({ data: null }),
@@ -150,10 +165,7 @@ export function useProfile() {
     quotesLoadingMore.value = true
     const last = quotes.value[quotes.value.length - 1]
 
-    const { data } = await supabase
-      .from('quotes')
-      .select(QUOTE_COLUMNS)
-      .eq('user_id', profile.value.id)
+    const { data } = await baseQuotesQuery(profile.value.id)
       .lt('created_at', last.created_at)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
@@ -167,6 +179,21 @@ export function useProfile() {
       await useLikes().hydrate(fresh)
     }
     quotesLoadingMore.value = false
+  }
+
+  /** Cambia el filtro de visibilidad (Todas/Públicas/Privadas) y recarga la 1ª página. */
+  async function setQuoteFilter(f: QuoteFilter) {
+    if (f === quoteFilter.value || !profile.value) return
+    quoteFilter.value = f
+    quotesReloading.value = true
+    const { data } = await baseQuotesQuery(profile.value.id)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+    quotes.value = data ?? []
+    quotesHasMore.value = (data?.length ?? 0) === PAGE_SIZE
+    useComments().hydrateCounts(quotes.value)
+    await useLikes().hydrate(quotes.value)
+    quotesReloading.value = false
   }
 
   /** Recuenta seguidores/seguidos aceptados del perfil (tras cambios en las listas). */
@@ -299,6 +326,9 @@ export function useProfile() {
     blockBusy,
     quotesHasMore,
     quotesLoadingMore,
+    quoteFilter,
+    quotesReloading,
+    setQuoteFilter,
     load,
     loadMoreQuotes,
     toggleFollow,

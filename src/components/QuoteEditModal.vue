@@ -15,6 +15,7 @@ const MAX = 2000
 const content = ref('')
 const page = ref('')
 const note = ref('')
+const isPrivate = ref(false)
 const error = ref<string | null>(null)
 const saving = ref(false)
 
@@ -26,6 +27,7 @@ watch(
       content.value = props.quote.content
       page.value = props.quote.page != null ? String(props.quote.page) : ''
       note.value = props.quote.note ?? ''
+      isPrivate.value = props.quote.is_private
       error.value = null
     }
   },
@@ -61,6 +63,7 @@ async function submit() {
     content: text,
     page: pageNum,
     note: note.value.trim() || null,
+    isPrivate: isPrivate.value,
   })
   saving.value = false
 
@@ -155,6 +158,39 @@ async function submit() {
               class="w-full resize-y rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
             ></textarea>
           </div>
+
+          <!-- Visibilidad de la cita -->
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3.5 transition-colors dark:border-stone-800 dark:bg-stone-800/60"
+            :class="isPrivate ? 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/20' : ''"
+          >
+            <span class="mt-0.5 flex-none" :class="isPrivate ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400'">
+              <svg v-if="isPrivate" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" />
+              </svg>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-medium text-stone-800 dark:text-stone-100">{{ t('quoteForm.privateLabel') }}</span>
+              <span class="mt-0.5 block text-xs text-stone-500 dark:text-stone-400">{{ t('quoteForm.privateHint') }}</span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="isPrivate"
+              :aria-label="t('quoteForm.privateLabel')"
+              class="relative mt-0.5 inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600/40"
+              :class="isPrivate ? 'bg-emerald-600' : 'bg-stone-300 dark:bg-stone-600'"
+              @click="isPrivate = !isPrivate"
+            >
+              <span
+                class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform"
+                :class="isPrivate ? 'translate-x-5' : 'translate-x-0.5'"
+              ></span>
+            </button>
+          </label>
 
           <div class="flex justify-end gap-2 pt-2">
             <button

@@ -149,6 +149,8 @@
   "quote": {
     "readerFallback": "Reader",
     "shareError": "Couldn't share the image.",
+    "privateBadge": "Private",
+    "privateHint": "Only you can see this quote.",
     "menu": {
       "options": "Quote options",
       "edit": "Edit",
@@ -200,12 +202,15 @@
     "notePlaceholder": "Why it hit home, what it reminded you of…",
     "errWrite": "Write the quote.",
     "errTooLong": "The quote can't exceed {max} characters.",
-    "errPageInvalid": "The page must be a positive whole number."
+    "errPageInvalid": "The page must be a positive whole number.",
+    "privateLabel": "Private quote · just for me",
+    "privateHint": "Only you will see it; it won't appear in the feed."
   },
   "compose": {
     "title": "New quote",
     "aria": "Publish a quote",
     "submit": "Publish",
+    "save": "Save",
     "submitting": "Publishing…",
     "errChooseBook": "Choose or create a book.",
     "errPublishFailed": "Couldn't publish the quote."
@@ -291,6 +296,11 @@
     "followersLabel": "followers",
     "followingLabel": "following",
     "quotesHeading": "Quotes",
+    "filter": {
+      "all": "All",
+      "public": "Public",
+      "private": "Private"
+    },
     "blockedTitle": "You've blocked {'@'}{username}",
     "blockedBody": "You don't see each other's content. Unblock to interact again.",
     "privateTitle": "This account is private",
@@ -298,6 +308,8 @@
     "privateRequest": "Request to follow {'@'}{username} to see their quotes.",
     "emptySelf": "You haven't published any quotes yet.",
     "emptyOther": "Hasn't published any quotes yet.",
+    "emptyPublic": "You don't have any public quotes yet.",
+    "emptyPrivate": "You don't have any private quotes yet. Turn on Private when publishing to save them just for you.",
     "endSelf": "You've reached the end of your quotes.",
     "endOther": "No more quotes from this reader, for now."
   },

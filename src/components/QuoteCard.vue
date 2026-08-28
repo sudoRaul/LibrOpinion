@@ -185,8 +185,21 @@ function onReportComment(c: Comment) {
           >
             {{ displayName }}
           </component>
-          <p class="truncate text-sm text-stone-500 dark:text-stone-400">
-            <RouterLink v-if="handle" :to="`/u/${handle}`" class="hover:underline">@{{ handle }}</RouterLink><template v-if="handle"> · </template><RouterLink :to="`/q/${quote.id}`" class="hover:underline">{{ timeAgo(quote.created_at) }}</RouterLink>
+          <p class="flex items-center gap-1.5 truncate text-sm text-stone-500 dark:text-stone-400">
+            <span class="truncate">
+              <RouterLink v-if="handle" :to="`/u/${handle}`" class="hover:underline">@{{ handle }}</RouterLink><template v-if="handle"> · </template><RouterLink :to="`/q/${quote.id}`" class="hover:underline">{{ timeAgo(quote.created_at) }}</RouterLink>
+            </span>
+            <!-- Distintivo de cita privada (solo la ve su autor) -->
+            <span
+              v-if="quote.is_private"
+              class="inline-flex flex-none items-center gap-1 rounded-full bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-500 dark:bg-stone-800 dark:text-stone-400"
+              :title="t('quote.privateHint')"
+            >
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              {{ t('quote.privateBadge') }}
+            </span>
           </p>
         </div>
       </div>

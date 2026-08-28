@@ -149,6 +149,8 @@
   "quote": {
     "readerFallback": "Lector",
     "shareError": "No se pudo compartir la imagen.",
+    "privateBadge": "Privada",
+    "privateHint": "Solo tú puedes ver esta cita.",
     "menu": {
       "options": "Opciones de la cita",
       "edit": "Editar",
@@ -200,12 +202,15 @@
     "notePlaceholder": "Por qué te llegó, qué te recordó…",
     "errWrite": "Escribe la cita.",
     "errTooLong": "La cita no puede superar {max} caracteres.",
-    "errPageInvalid": "La página debe ser un número entero positivo."
+    "errPageInvalid": "La página debe ser un número entero positivo.",
+    "privateLabel": "Cita privada · solo para mí",
+    "privateHint": "Solo tú podrás verla; no aparecerá en el feed."
   },
   "compose": {
     "title": "Nueva cita",
     "aria": "Publicar una cita",
     "submit": "Publicar",
+    "save": "Guardar",
     "submitting": "Publicando…",
     "errChooseBook": "Elige o crea un libro.",
     "errPublishFailed": "No se pudo publicar la cita."
@@ -291,6 +296,11 @@
     "followersLabel": "seguidores",
     "followingLabel": "siguiendo",
     "quotesHeading": "Citas",
+    "filter": {
+      "all": "Todas",
+      "public": "Públicas",
+      "private": "Privadas"
+    },
     "blockedTitle": "Has bloqueado a {'@'}{username}",
     "blockedBody": "No veis vuestro contenido mutuamente. Desbloquea para volver a interactuar.",
     "privateTitle": "Esta cuenta es privada",
@@ -298,6 +308,8 @@
     "privateRequest": "Solicita seguir a {'@'}{username} para ver sus citas.",
     "emptySelf": "Aún no has publicado ninguna cita.",
     "emptyOther": "Todavía no ha publicado citas.",
+    "emptyPublic": "Aún no tienes citas públicas.",
+    "emptyPrivate": "Aún no tienes citas privadas. Actívalas al publicar para guardarlas solo para ti.",
     "endSelf": "Has llegado al final de tus citas.",
     "endOther": "No hay más citas de este lector, por ahora."
   },

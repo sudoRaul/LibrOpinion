@@ -28,8 +28,9 @@ function start() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'quotes' },
       (payload) => {
-        const row = payload.new as { id: string; user_id: string }
+        const row = payload.new as { id: string; user_id: string; is_private?: boolean }
         if (row.user_id === myId) return // ya la añado yo al publicar (optimista)
+        if (row.is_private) return // las privadas no entran en el feed de nadie
         if (feed.isFollowed(row.user_id)) void feed.addQuoteById(row.id)
       },
     )
