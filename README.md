@@ -29,7 +29,7 @@ You read a book, you underline the sentences that stick — and then they live f
 
 Built as a full-stack project with **Vue 3 + TypeScript** on the front and **Supabase** (PostgreSQL, Auth, Row-Level Security, Realtime, Storage and Edge Functions) on the back — with **RLS as the single security boundary**, not client-side checks.
 
-> 🔗 **Live demo:** _coming soon on Netlify_ · _(add your URL here once deployed)_
+> 🔗 **Live demo:** [LibrOpinion](https://libropinion.netlify.app/)
 
 ---
 
